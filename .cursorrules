@@ -1,0 +1,44 @@
+# AI Test Generation Platform — Cursor Rules
+
+## Project Overview
+Web platform that parses backend codebases (Laravel/FastAPI/Spring Boot),
+generates API test cases using Gemini AI, executes them via Newman,
+and produces structured bug reports.
+
+## Backend Stack
+- FastAPI (Python 3.11) — async throughout
+- PostgreSQL + SQLAlchemy (async) + Alembic migrations
+- Celery + Redis for async task queue
+- Gemini Flash as primary LLM, Claude Sonnet as fallback
+- Newman CLI for test execution
+
+## Frontend Stack
+- Next.js 14 App Router + TypeScript
+- TailwindCSS + ShadCN UI
+- Zustand for global state
+- Axios for API calls (always through lib/api.ts)
+- WebSocket for live execution streaming
+
+## Critical Rules
+- All parsers output standard EndpointMap JSON (see parsers/base.py)
+- All AI prompts live in app/ai/prompts.py — never inline elsewhere
+- All DB calls must be async (use async with AsyncSession)
+- All endpoints validated with Pydantic schemas
+- Never commit .env files — use .env.example as template
+- Supported frameworks: laravel, fastapi, spring_boot only
+
+## Folder Structure
+backend/app/
+  models/     — SQLAlchemy ORM models
+  schemas/    — Pydantic request/response schemas
+  routers/    — FastAPI route handlers
+  parsers/    — Framework-specific codebase parsers
+  ai/         — LLM integration and prompts
+  execution/  — Newman runner and collection builder
+  tasks/      — Celery async tasks
+  services/   — Business logic
+  websocket/  — WebSocket handlers
+
+## API Base URL
+Development: http://localhost:8000
+All endpoints prefixed with /v1
