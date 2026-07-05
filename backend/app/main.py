@@ -1,20 +1,15 @@
+"""FastAPI application entry point."""
+
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    title="AI Test Platform API",
-    description="Automated API test generation from codebase + ticket",
-    version="1.0.0"
-)
+from app.routers import projects
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="AI-Powered API Test Generation Platform")
+
+app.include_router(projects.router)
+
 
 @app.get("/health")
-async def health():
-    return {"status": "ok", "version": "1.0.0"}
+def health_check() -> dict[str, str]:
+    """Basic liveness check."""
+    return {"status": "ok"}
