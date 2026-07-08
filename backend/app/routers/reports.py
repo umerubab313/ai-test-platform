@@ -3,6 +3,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.execution.result_parser import parse_results
@@ -11,6 +12,7 @@ from app.database import get_db
 from app.models.bug_report import BugReport
 from app.models.test_case import TestCase
 from app.models.test_run import TestRun
+from app.report_pdf import build_report_pdf_bytes
 from app.schemas.report import BugReportItem, ReportCoverage, ReportResponse, ReportSummary
 
 router = APIRouter(tags=["reports"])
@@ -74,14 +76,17 @@ def get_report(run_id: uuid.UUID, db: Session = Depends(get_db)) -> ReportRespon
 
 
 @router.get("/runs/{run_id}/report/pdf")
-def get_report_pdf(run_id: uuid.UUID, db: Session = Depends(get_db)) -> None:
+def get_report_pdf(run_id: uuid.UUID, db: Session = Depends(get_db)) -> Response:
     """Download the report as a PDF.
 
     PLACEHOLDER: PDF generation is built in Phase 9. Confirms the run
     exists now so the route is real, but the actual file isn't built yet.
     """
-    _get_run_or_404(run_id, db)
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="PDF report generation is implemented in Phase 9",
+    report = get_report(run_id, db)
+    pdf_bytes = build_report_pdf_bytes(report)
+    filename = f"run-{run_id}-report.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
