@@ -5,6 +5,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.execution.result_parser import parse_results
+
 from app.database import get_db
 from app.models.bug_report import BugReport
 from app.models.test_case import TestCase
@@ -66,7 +68,7 @@ def get_report(run_id: uuid.UUID, db: Session = Depends(get_db)) -> ReportRespon
             total_endpoints=total_endpoints,
             pct=pct,
         ),
-        results=run.newman_output_json or [],
+        results=parse_results(run.newman_output_json) if run.newman_output_json else [],
         bug_reports=bug_items,
     )
 
