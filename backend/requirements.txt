@@ -7,3 +7,8 @@ pydantic==2.12.5
 pydantic-settings==2.7.1
 python-dotenv==1.0.1
 python-multipart==0.0.12
+google-genai===2.10.0
+anthropic==0.116.0
+jsonschema==4.23.0
+celery==5.4.0
+redis==5.2.1

@@ -4,6 +4,11 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from app.models.test_case import TestCase
+# from app.schemas.test_case import GenerateRequest
+from app.models.project import Project
+from app.tasks.generate_task import generate_test_cases_task
+
 
 from app.database import get_db
 from app.models.test_case import TestCase
@@ -15,6 +20,7 @@ from app.schemas.test_case import (
     TestCaseRead,
     TestCaseUpdate,
 )
+
 
 router = APIRouter(tags=["test_cases"])
 
@@ -48,21 +54,33 @@ def _to_read_schema(test_case: TestCase) -> TestCaseRead:
     )
 
 
+from app.tasks.generate_task import generate_test_cases_task
+
+
 @router.post(
     "/tickets/{ticket_id}/generate",
     response_model=GenerateResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
 def generate_test_cases(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> GenerateResponse:
-    """Trigger AI test case generation for a ticket.
+    """Dispatch AI test case generation using the project's stored endpoint_map.
 
-    PLACEHOLDER: does not call the AI yet (that's Phase 5) and does not
-    dispatch a real background job yet (that's Phase 6, Celery). For now
-    this confirms the ticket exists and returns a fake task reference, so
-    the frontend can build against the final contract today.
+    No endpoint_map is ever provided by the client. If the project has
+    none yet (no successful upload has completed), this fails immediately
+    with a clear message and never dispatches a task or calls the AI.
     """
-    _get_ticket_or_404(ticket_id, db)
-    return GenerateResponse(task_id=f"placeholder-{uuid.uuid4()}", status="generating")
+    ticket = _get_ticket_or_404(ticket_id, db)
+    project = db.query(Project).filter(Project.id == ticket.project_id).first()
+    if project is None or not project.endpoint_map:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "NO_CODEBASE_UPLOADED",
+                "message": "Upload a ZIP file or GitHub URL for this project before generating test cases.",
+            },
+        )
+    task = generate_test_cases_task.delay(str(ticket_id))
+    return GenerateResponse(task_id=task.id, status="generating")
 
 
 @router.get("/tickets/{ticket_id}/test-cases", response_model=TestCaseListResponse)

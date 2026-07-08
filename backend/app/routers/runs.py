@@ -5,6 +5,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.tasks.execute_task import execute_test_run_task
 from app.database import get_db
 from app.models.test_case import TestCase
 from app.models.test_run import TestRun
@@ -61,6 +62,7 @@ def trigger_run(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> RunCreat
     db.add(run)
     db.commit()
     db.refresh(run)
+    execute_test_run_task.delay(str(run.id))
     return RunCreateResponse(run_id=run.id, status="running")
 
 

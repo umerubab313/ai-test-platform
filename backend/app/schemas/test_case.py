@@ -52,3 +52,13 @@ class TestCaseApproveResponse(BaseModel):
 
     id: uuid.UUID
     approved: bool
+
+# class GenerateRequest(BaseModel):
+#     """Request body for POST /tickets/{id}/generate.
+
+#     endpoint_map is optional and temporary: once codebase parsing (still
+#     unbuilt) produces and stores real parsed endpoints, this will be read
+#     from the database automatically instead of passed in manually.
+#     """
+
+#     endpoint_map: list[dict] = []

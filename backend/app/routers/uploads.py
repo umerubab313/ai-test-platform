@@ -1,11 +1,14 @@
 """API routes for uploading a codebase (ZIP file or GitHub URL)."""
 
+import io
 import uuid
 import zipfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
+from app.tasks.parse_task import parse_codebase_task
+
 
 from app.database import get_db
 from app.models.project import Project
@@ -26,8 +29,6 @@ def _get_project_or_404(project_id: uuid.UUID, db: Session) -> Project:
 
 def _safe_extract_zip(zip_bytes: bytes, dest_dir: Path) -> None:
     """Extract a ZIP into dest_dir, rejecting path traversal and symlinks."""
-    import io
-
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
         for member in archive.infolist():
             if ".." in member.filename or Path(member.filename).is_absolute():
@@ -47,7 +48,10 @@ def _safe_extract_zip(zip_bytes: bytes, dest_dir: Path) -> None:
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def upload_codebase(
-    project_id: uuid.UUID, request: Request, db: Session = Depends(get_db)
+    project_id: uuid.UUID,
+    file: UploadFile | str | None = File(None, description="ZIP file containing the codebase"),
+    github_url: str | None = Form(None, description="GitHub repo URL, alternative to file"),
+    db: Session = Depends(get_db),
 ) -> UploadResponse:
     """Accept a ZIP file or a GitHub URL for codebase parsing.
 
@@ -56,27 +60,40 @@ async def upload_codebase(
     phase and dispatched as a real Celery task in Phase 6.
     """
     _get_project_or_404(project_id, db)
-    content_type = request.headers.get("content-type", "")
+
+    if isinstance(file, str) and file == "":
+        file = None
+    if github_url == "":
+        github_url = None
+
+    if file is None and github_url is None:
+        raise HTTPException(400, detail={"error": "MISSING_INPUT", "message": "Provide a file or a github_url"})
+    if file is not None and github_url is not None:
+        raise HTTPException(400, detail={"error": "AMBIGUOUS_INPUT", "message": "Provide only one of file or github_url"})
+
     upload_id = uuid.uuid4()
 
-    if content_type.startswith("multipart/form-data"):
-        form = await request.form()
-        upload_file = form.get("file")
-        if upload_file is None:
-            raise HTTPException(status_code=400, detail={"error": "FILE_MISSING", "message": "No file provided"})
-        content = await upload_file.read()
+    if file is not None:
+        content = await file.read()
         if len(content) > MAX_UPLOAD_BYTES:
-            raise HTTPException(
-                status_code=400,
-                detail={"error": "FILE_TOO_LARGE", "message": "ZIP files must be under 50MB"},
-            )
+            raise HTTPException(400, detail={"error": "FILE_TOO_LARGE", "message": "ZIP files must be under 50MB"})
         dest_dir = Path(f"/tmp/projects/{upload_id}")
         dest_dir.mkdir(parents=True, exist_ok=True)
         _safe_extract_zip(content, dest_dir)
-    elif content_type.startswith("application/json"):
-        body = await request.json()
-        GithubUploadRequest.model_validate(body)
     else:
-        raise HTTPException(status_code=400, detail={"error": "UNSUPPORTED_CONTENT_TYPE"})
+        GithubUploadRequest.model_validate({"github_url": github_url})
 
-    return UploadResponse(upload_id=upload_id, task_id=f"placeholder-{uuid.uuid4()}", status="processing")
+    task = parse_codebase_task.delay(str(upload_id), str(project_id))
+    return UploadResponse(upload_id=upload_id, task_id=task.id, status="processing")
+
+@router.get("/uploads/{task_id}/result")
+def get_upload_result(task_id: str) -> dict:
+    """Poll for whether a codebase upload finished parsing.
+
+    The parsed endpoint_map itself is now stored on the project row —
+    this just reports whether that update succeeded.
+    """
+    result = AsyncResult(task_id, app=celery_app)
+    if not result.ready():
+        return {"status": "processing"}
+    return result.result

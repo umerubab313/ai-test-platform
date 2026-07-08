@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, Index, String, text
-from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
+from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -39,6 +39,10 @@ class Project(Base):
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         server_default=text("NOW()"),
+    )
+    endpoint_map: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    endpoint_map_updated_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=True
     )
 
     __table_args__ = (
