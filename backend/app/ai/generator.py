@@ -1,4 +1,7 @@
-"""AI generation with retry + fallback, per SDD section 10.2."""
+"""AI generation with retry + fallback, per SDD section 10.2.
+
+Primary: Claude (company-paid account). Fallback: Gemini.
+"""
 
 import asyncio
 import logging
@@ -16,32 +19,32 @@ RETRY_DELAYS = [1, 2, 4]
 
 
 async def generate_with_retry(system_prompt: str, user_prompt: str, schema: dict) -> dict:
-    """Call Gemini with retries; fall back to Claude if all retries fail."""
+    """Call Claude with retries; fall back to Gemini if all retries fail."""
     for attempt, delay in enumerate(RETRY_DELAYS):
         started = time.monotonic()
         raw = None
         try:
-            raw = await call_gemini(system_prompt, user_prompt)
+            raw = await call_claude(system_prompt, user_prompt)
             return parse_and_validate(raw, schema)
         except Exception as exc:
-            _log_failure("gemini", attempt + 1, started, exc, raw)
+            _log_failure("claude", attempt + 1, started, exc, raw)
             if attempt < MAX_RETRIES - 1:
                 await asyncio.sleep(delay)
             else:
-                return await _fallback_to_claude(system_prompt, user_prompt, schema)
+                return await _fallback_to_gemini(system_prompt, user_prompt, schema)
     raise AIGenerationError("Unreachable: retry loop exhausted without returning")
 
 
-async def _fallback_to_claude(system_prompt: str, user_prompt: str, schema: dict) -> dict:
-    """Try Claude once. If it also fails for any reason, raise AI_GENERATION_FAILED."""
+async def _fallback_to_gemini(system_prompt: str, user_prompt: str, schema: dict) -> dict:
+    """Try Gemini once. If it also fails for any reason, raise AI_GENERATION_FAILED."""
     started = time.monotonic()
     raw = None
     try:
-        raw = await call_claude(system_prompt, user_prompt)
+        raw = await call_gemini(system_prompt, user_prompt)
         return parse_and_validate(raw, schema)
     except Exception as exc:
-        _log_failure("claude_fallback", MAX_RETRIES, started, exc, raw)
-        raise AIGenerationError("Both Gemini and Claude fallback failed") from exc
+        _log_failure("gemini_fallback", MAX_RETRIES, started, exc, raw)
+        raise AIGenerationError("Both Claude and Gemini fallback failed") from exc
 
 
 def _log_failure(service: str, attempt: int, started: float, exc: Exception, raw: str | None) -> None:

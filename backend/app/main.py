@@ -2,11 +2,12 @@
 
 from fastapi import FastAPI
 
-from app.routers import projects, reports, runs, test_cases, tickets, uploads
+from app.routers import auth, projects, reports, runs, test_cases, tickets, uploads
 
 
 app = FastAPI(title="AI-Powered API Test Generation Platform")
 
+app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(tickets.router)
 app.include_router(test_cases.router)

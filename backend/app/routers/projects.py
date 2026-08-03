@@ -9,8 +9,9 @@ from app.database import get_db
 from app.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectResponse
 
-router = APIRouter(prefix="/projects", tags=["projects"])
+from app.auth.dependencies import require_auth
 
+router = APIRouter(prefix="/projects", tags=["projects"], dependencies=[Depends(require_auth)])
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 def create_project(payload: ProjectCreate, db: Session = Depends(get_db)) -> Project:

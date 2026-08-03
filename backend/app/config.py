@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str
     secret_key: str
     debug: bool = False
+    admin_username: str
+    admin_password: str
+    jwt_secret_key: str
+    jwt_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",
