@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     max_upload_mb: int = 150
     max_file_count: int = 5000
     parse_timeout_seconds: int = 300
+    cors_allowed_origins: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,11 +1,22 @@
 """FastAPI application entry point."""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import get_settings
 from app.routers import auth, projects, reports, runs, test_cases, tickets, uploads
 
+settings = get_settings()
 
 app = FastAPI(title="AI-Powered API Test Generation Platform")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allowed_origins.split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(projects.router)
@@ -14,6 +25,7 @@ app.include_router(test_cases.router)
 app.include_router(uploads.router)
 app.include_router(runs.router)
 app.include_router(reports.router)
+
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
