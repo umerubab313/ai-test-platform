@@ -5,20 +5,20 @@ import uuid
 
 from pydantic import BaseModel, field_validator
 
-GITHUB_URL_PATTERN = re.compile(r"^https://github\.com/[\w.-]+/[\w.-]+/?$")
+REPO_URL_PATTERN = re.compile(r"^https://(github\.com|bitbucket\.org)/[\w.-]+/[\w.-]+/?$")
 
 
 class GithubUploadRequest(BaseModel):
-    """Request body for Option B: uploading via a GitHub URL."""
+    """Request body for uploading via a repo URL (GitHub or Bitbucket)."""
 
     github_url: str
 
     @field_validator("github_url")
     @classmethod
-    def validate_github_url(cls, value: str) -> str:
-        """Reject anything that doesn't look like a real GitHub repo URL."""
-        if not GITHUB_URL_PATTERN.match(value):
-            raise ValueError("github_url must match https://github.com/{owner}/{repo}")
+    def validate_repo_url(cls, value: str) -> str:
+        """Reject anything that doesn't look like a real GitHub/Bitbucket repo URL."""
+        if not REPO_URL_PATTERN.match(value):
+            raise ValueError("github_url must match https://github.com/{owner}/{repo} or https://bitbucket.org/{owner}/{repo}")
         return value
 
 

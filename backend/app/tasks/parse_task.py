@@ -13,6 +13,7 @@ from app.parsers.fastapi_parser import FastAPIParser
 from app.parsers.laravel import LaravelParser
 from app.parsers.spring_boot import SpringBootParser
 from app.services.codebase_limits import count_relevant_files
+from urllib.parse import urlsplit, urlunsplit
 
 settings = get_settings()
 
@@ -86,17 +87,41 @@ def _parse_with_timeout(parser, dest_dir: Path) -> list[dict] | None:
 
 
 def _clone_repo(github_url: str, dest_dir: Path) -> dict | None:
-    """Shallow-clone a public GitHub repo. Returns an error dict on failure, else None."""
+    """Shallow-clone a GitHub or Bitbucket repo. Returns an error dict on failure, else None."""
     dest_dir.mkdir(parents=True, exist_ok=True)
+    clone_url = _with_credentials(github_url)
     try:
         subprocess.run(
-            ["git", "clone", "--depth", "1", github_url, str(dest_dir)],
+            ["git", "clone", "--depth", "1", clone_url, str(dest_dir)],
             check=True, timeout=60, capture_output=True,
         )
     except FileNotFoundError:
         return {"status": "failed", "error": "git is not installed on this machine"}
     except subprocess.CalledProcessError as exc:
-        return {"status": "failed", "error": f"git clone failed: {exc.stderr.decode(errors='ignore')[:200]}"}
+        message = _redact(exc.stderr.decode(errors="ignore")[:200])
+        return {"status": "failed", "error": f"git clone failed: {message}"}
     except subprocess.TimeoutExpired:
         return {"status": "failed", "error": "git clone timed out after 60s"}
     return None
+
+
+def _with_credentials(url: str) -> str:
+    """Inject Bitbucket app-password credentials into the clone URL, if configured.
+
+    GitHub URLs and unconfigured Bitbucket credentials are left untouched
+    (public-clone attempt). Credentials never appear in the request body
+    or get persisted anywhere — they're only ever embedded transiently
+    into this one clone command.
+    """
+    parts = urlsplit(url)
+    if parts.netloc != "bitbucket.org" or not settings.bitbucket_username or not settings.bitbucket_app_password:
+        return url
+    netloc = f"{settings.bitbucket_username}:{settings.bitbucket_app_password}@{parts.netloc}"
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+
+def _redact(message: str) -> str:
+    """Strip the Bitbucket app password out of any error message before it's stored or returned."""
+    if settings.bitbucket_app_password:
+        message = message.replace(settings.bitbucket_app_password, "****")
+    return message

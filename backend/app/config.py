@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     admin_username: str
     admin_password: str
     jwt_secret_key: str
+    bitbucket_username: str = ""
+    bitbucket_app_password: str = ""
     jwt_expire_minutes: int = 60
     max_upload_mb: int = 150
     max_file_count: int = 5000
