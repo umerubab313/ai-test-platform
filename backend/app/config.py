@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     admin_password: str
     jwt_secret_key: str
     jwt_expire_minutes: int = 60
+    max_upload_mb: int = 150
+    max_file_count: int = 5000
+    parse_timeout_seconds: int = 300
 
     model_config = SettingsConfigDict(
         env_file=".env",

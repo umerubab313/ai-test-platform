@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 from app.parsers.base import BaseParser
+from app.services.codebase_limits import iter_source_files
 
 _DECORATOR_PATTERN = re.compile(
     r"@(?:app|router)\.(get|post|put|patch|delete)\(\s*['\"]([^'\"]+)['\"]"
@@ -20,7 +21,7 @@ class FastAPIParser(BaseParser):
     """Extracts endpoints from openapi.json, or decorators as a fallback."""
 
     def parse(self, source_dir: Path) -> list[dict]:
-        schema_files = list(source_dir.rglob("openapi.json"))
+        schema_files = list(iter_source_files(source_dir, "openapi.json"))
         if schema_files:
             return self._parse_openapi_schema(schema_files[0])
         return self._parse_decorators(source_dir)
@@ -40,7 +41,7 @@ class FastAPIParser(BaseParser):
 
     def _parse_decorators(self, source_dir: Path) -> list[dict]:
         endpoints = []
-        for py_file in source_dir.rglob("*.py"):
+        for py_file in iter_source_files(source_dir, ".py"):
             text = py_file.read_text(encoding="utf-8", errors="ignore")
             relative_path = str(py_file.relative_to(source_dir))
             for verb, path in _DECORATOR_PATTERN.findall(text):

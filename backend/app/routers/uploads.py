@@ -13,11 +13,14 @@ from app.tasks.parse_task import parse_codebase_task
 from app.database import get_db
 from app.models.project import Project
 from app.schemas.upload import GithubUploadRequest, UploadResponse
+from app.auth.dependencies import require_auth
+from app.config import get_settings
+from app.services.codebase_limits import count_relevant_files
 
-router = APIRouter(tags=["uploads"])
+router = APIRouter(tags=["uploads"], dependencies=[Depends(require_auth)])
 
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50MB, per SDD section 9.1
-
+settings = get_settings()
+MAX_UPLOAD_BYTES = settings.max_upload_mb * 1024 * 1024
 
 def _get_project_or_404(project_id: uuid.UUID, db: Session) -> Project:
     """Fetch a project by ID or raise 404."""
@@ -80,6 +83,17 @@ async def upload_codebase(
         dest_dir = Path(f"/tmp/projects/{upload_id}")
         dest_dir.mkdir(parents=True, exist_ok=True)
         _safe_extract_zip(content, dest_dir)
+        file_count = count_relevant_files(dest_dir)
+        if file_count > settings.max_file_count:
+            import shutil
+            shutil.rmtree(dest_dir, ignore_errors=True)
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "CODEBASE_TOO_LARGE",
+                    "message": f"Codebase has {file_count} files, exceeding the {settings.max_file_count} limit",
+                },
+            )
     else:
         GithubUploadRequest.model_validate({"github_url": github_url})
 

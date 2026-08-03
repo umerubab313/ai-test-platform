@@ -1,15 +1,20 @@
 """Celery task: extract (if needed), parse, and persist a codebase's endpoint map."""
 
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from datetime import datetime, timezone
 from pathlib import Path
 
 from app.celery_app import celery_app
+from app.config import get_settings
 from app.database import SessionLocal
 from app.models.project import Project
 from app.parsers.fastapi_parser import FastAPIParser
 from app.parsers.laravel import LaravelParser
 from app.parsers.spring_boot import SpringBootParser
+from app.services.codebase_limits import count_relevant_files
+
+settings = get_settings()
 
 _PARSERS = {
     "laravel": LaravelParser(),
@@ -20,12 +25,7 @@ _PARSERS = {
 
 @celery_app.task(name="parse_codebase_task")
 def parse_codebase_task(upload_id: str, project_id: str, github_url: str | None = None) -> dict:
-    """Extract/clone, parse, and store the endpoint_map on the project row.
-
-    This becomes the project's single source of truth for its endpoints.
-    Re-running this (a new upload) overwrites the previous result —
-    tickets created afterward automatically see the latest version.
-    """
+    """Extract (if needed) and parse a codebase into an endpoint map."""
     db = SessionLocal()
     try:
         project = db.query(Project).filter(Project.id == project_id).first()
@@ -37,18 +37,52 @@ def parse_codebase_task(upload_id: str, project_id: str, github_url: str | None 
             clone_error = _clone_repo(github_url, dest_dir)
             if clone_error is not None:
                 return clone_error
+            size_error = _check_file_count(dest_dir)
+            if size_error is not None:
+                return size_error
 
         parser = _PARSERS.get(project.framework)
         if parser is None:
             return {"status": "failed", "error": f"No parser available for {project.framework}"}
 
-        endpoint_map = parser.parse(dest_dir)
+        endpoint_map = _parse_with_timeout(parser, dest_dir)
+        if endpoint_map is None:
+            return {"status": "failed", "error": "PARSE_TIMEOUT", "message": f"Parsing exceeded {settings.parse_timeout_seconds}s"}
+
         project.endpoint_map = endpoint_map
         project.endpoint_map_updated_at = datetime.now(timezone.utc)
         db.commit()
         return {"status": "completed", "endpoint_count": len(endpoint_map)}
     finally:
         db.close()
+
+
+def _check_file_count(dest_dir: Path) -> dict | None:
+    """Return an error dict if the cloned repo exceeds the file-count limit."""
+    file_count = count_relevant_files(dest_dir)
+    if file_count > settings.max_file_count:
+        return {
+            "status": "failed",
+            "error": "CODEBASE_TOO_LARGE",
+            "message": f"Repo has {file_count} files, exceeding the {settings.max_file_count} limit",
+        }
+    return None
+
+
+def _parse_with_timeout(parser, dest_dir: Path) -> list[dict] | None:
+    """Run parser.parse in a worker thread, enforcing a hard time limit.
+
+    Note: if the timeout fires, the parsing thread isn't forcibly killed
+    (Python has no safe way to do that) — it just keeps running in the
+    background and its result is discarded. This bounds how long the
+    *task* waits, which is what protects the worker from hanging forever.
+    """
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(parser.parse, dest_dir)
+        try:
+            return future.result(timeout=settings.parse_timeout_seconds)
+        except FutureTimeoutError:
+            return None
 
 
 def _clone_repo(github_url: str, dest_dir: Path) -> dict | None:

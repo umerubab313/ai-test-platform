@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 
 from app.parsers.base import BaseParser
+from app.services.codebase_limits import iter_source_files
 
 _CLASS_BASE_PATH = re.compile(r'@RequestMapping\(\s*["\']([^"\']+)["\']')
 _METHOD_MAPPING = re.compile(
@@ -28,7 +29,7 @@ class SpringBootParser(BaseParser):
 
     def parse(self, source_dir: Path) -> list[dict]:
         endpoints: list[dict] = []
-        for java_file in source_dir.rglob("*.java"):
+        for java_file in iter_source_files(source_dir, ".java"):
             endpoints.extend(self._parse_file(java_file, source_dir))
         return endpoints
 
