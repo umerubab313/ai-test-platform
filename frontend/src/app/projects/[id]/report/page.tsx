@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { BugReportCard } from "@/components/report/BugReportCard";
@@ -21,7 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getReport, getReportPdfUrl } from "@/lib/api";
+import { downloadReportPdf, getReport } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import type { Report } from "@/types";
 
@@ -82,6 +83,7 @@ export default function ReportPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   useEffect(() => {
     if (!runId) {
@@ -118,6 +120,31 @@ export default function ReportPage() {
       cancelled = true;
     };
   }, [runId]);
+
+  const handleDownloadPdf = async () => {
+    if (isDownloadingPdf || !report?.run_id) {
+      return;
+    }
+
+    setIsDownloadingPdf(true);
+
+    try {
+      const blob = await downloadReportPdf(report.run_id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `report-${report.run_id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF report downloaded.");
+    } catch {
+      toast.error("Failed to download PDF report.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const results = (report?.results ?? []).filter(isReportResult);
 
@@ -176,17 +203,20 @@ export default function ReportPage() {
 
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                   <Button
-                    asChild
+                    type="button"
                     variant="outline"
+                    disabled={isDownloadingPdf}
+                    onClick={handleDownloadPdf}
                     className="w-full border-indigo-electric/30 font-heading text-[#F5F5F5] hover:bg-indigo-electric/10 sm:w-auto"
                   >
-                    <a
-                      href={getReportPdfUrl(report.run_id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Download PDF
-                    </a>
+                    {isDownloadingPdf ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin text-lime-cyber" />
+                        Generating PDF…
+                      </>
+                    ) : (
+                      "Download PDF Report"
+                    )}
                   </Button>
 
                   <Button
@@ -247,3 +277,4 @@ export default function ReportPage() {
     </div>
   );
 }
+

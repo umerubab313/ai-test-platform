@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateTestCase as updateTestCaseApi } from "@/lib/api";
+import { deleteTestCase as deleteTestCaseApi, getTestCase as getTestCaseApi, updateTestCase as updateTestCaseApi } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import type { TestCase } from "@/types";
 
@@ -68,6 +68,7 @@ export function TestCaseEditModal({
   onOpenChange,
 }: TestCaseEditModalProps) {
   const updateTestCase = useAppStore((state) => state.updateTestCase);
+  const removeTestCase = useAppStore((state) => state.removeTestCase);
 
   const [title, setTitle] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -79,23 +80,39 @@ export function TestCaseEditModal({
   const [headersError, setHeadersError] = useState<string>();
   const [payloadError, setPayloadError] = useState<string>();
   const [statusError, setStatusError] = useState<string>();
+  const [apiError, setApiError] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!testCase || !open) {
       return;
     }
 
-    setTitle(testCase.title);
-    setEndpoint(testCase.endpoint);
-    setMethod(testCase.method);
-    setHeadersText(stringifyJson(testCase.headers));
-    setPayloadText(stringifyJson(testCase.input_payload));
-    setExpectedStatusCode(String(testCase.expected_status_code));
-    setAssertionNotes(testCase.assertion_notes ?? "");
-    setHeadersError(undefined);
-    setPayloadError(undefined);
-    setStatusError(undefined);
+    const populate = (tc: TestCase) => {
+      setTitle(tc.title);
+      setEndpoint(tc.endpoint);
+      setMethod(tc.method);
+      setHeadersText(stringifyJson(tc.headers));
+      setPayloadText(stringifyJson(tc.input_payload));
+      setExpectedStatusCode(String(tc.expected_status_code));
+      setAssertionNotes(tc.assertion_notes ?? "");
+      setHeadersError(undefined);
+      setPayloadError(undefined);
+      setStatusError(undefined);
+      setApiError(undefined);
+    };
+
+    populate(testCase);
+
+    // Fetch latest test case from API GET /test-cases/{id}
+    getTestCaseApi(testCase.id)
+      .then((latest) => {
+        populate(latest);
+      })
+      .catch(() => {
+        // Fall back gracefully to passed prop
+      });
   }, [testCase, open]);
 
   const headersPreview = useMemo(() => parseJsonField(headersText, "Headers"), [headersText]);
@@ -114,6 +131,25 @@ export function TestCaseEditModal({
     setPayloadText(value);
     const result = parseJsonField(value, "Input payload");
     setPayloadError(result.ok ? undefined : result.error);
+  };
+
+  const handleDelete = async () => {
+    if (!testCase) return;
+    setIsDeleting(true);
+    setApiError(undefined);
+
+    try {
+      await deleteTestCaseApi(testCase.id);
+      removeTestCase(testCase.id);
+      onOpenChange(false);
+      toast.success("Test case deleted.");
+    } catch {
+      const msg = "Failed to delete test case.";
+      setApiError(msg);
+      toast.error(msg);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
@@ -136,6 +172,7 @@ export function TestCaseEditModal({
     }
 
     setStatusError(undefined);
+    setApiError(undefined);
 
     if (!headersResult.ok || !payloadResult.ok) {
       return;
@@ -159,7 +196,9 @@ export function TestCaseEditModal({
       onOpenChange(false);
       toast.success("Test case updated.");
     } catch {
-      toast.error("Failed to save test case.");
+      const msg = "Failed to save test case.";
+      setApiError(msg);
+      toast.error(msg);
     } finally {
       setIsSaving(false);
     }
@@ -179,6 +218,12 @@ export function TestCaseEditModal({
         </DialogHeader>
 
         <form onSubmit={handleSave} className="space-y-4">
+          {apiError ? (
+            <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+              {apiError}
+            </div>
+          ) : null}
+
           <div className="space-y-2">
             <Label htmlFor="edit-title">Title</Label>
             <Input
@@ -278,25 +323,37 @@ export function TestCaseEditModal({
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             <Button
               type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-indigo-electric/20 bg-transparent"
+              variant="destructive"
+              disabled={isDeleting || isSaving}
+              onClick={handleDelete}
+              className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
             >
-              Cancel
+              {isDeleting ? "Deleting…" : "Delete test case"}
             </Button>
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="bg-lime-cyber font-heading font-semibold text-black hover:bg-lime-cyber/90"
-            >
-              {isSaving ? "Saving…" : "Save changes"}
-            </Button>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="border-indigo-electric/20 bg-transparent"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSaving || isDeleting}
+                className="bg-lime-cyber font-heading font-semibold text-black hover:bg-lime-cyber/90"
+              >
+                {isSaving ? "Saving…" : "Save changes"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
+

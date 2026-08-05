@@ -67,3 +67,18 @@ def list_tickets(project_id: uuid.UUID, db: Session = Depends(get_db)) -> list[T
 def get_ticket(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> Ticket:
     """Get a single ticket by ID."""
     return _get_ticket_or_404(ticket_id, db)
+
+
+@router.patch("/tickets/{ticket_id}", response_model=TicketResponse)
+@router.put("/tickets/{ticket_id}", response_model=TicketResponse)
+def update_ticket(
+    ticket_id: uuid.UUID, payload: TicketCreate, db: Session = Depends(get_db)
+) -> Ticket:
+    """Update a ticket by ID."""
+    ticket = _get_ticket_or_404(ticket_id, db)
+    ticket.title = payload.title
+    ticket.description = payload.description
+    ticket.acceptance_criteria = payload.acceptance_criteria
+    db.commit()
+    db.refresh(ticket)
+    return ticket

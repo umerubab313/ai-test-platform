@@ -87,6 +87,18 @@ def parse_results(report: dict[str, Any]) -> list[dict[str, Any]]:
         response = execution.get("response")
         assertions = execution.get("assertions") or []
         passed = bool(assertions) and all(not a.get("error") for a in assertions)
+        assertion_list = [
+            {
+                "name": a.get("assertion", "Status code assertion"),
+                "passed": not bool(a.get("error")),
+                "error": (
+                    a.get("error", {}).get("message")
+                    if isinstance(a.get("error"), dict)
+                    else (str(a.get("error")) if a.get("error") else None)
+                ),
+            }
+            for a in assertions
+        ]
         results.append({
             "title": execution["item"]["name"],
             "endpoint": _reconstruct_url(execution["request"]["url"]),
@@ -94,5 +106,6 @@ def parse_results(report: dict[str, Any]) -> list[dict[str, Any]]:
             "status_code": response["code"] if response else None,
             "response_time_ms": response.get("responseTime") if response else None,
             "passed": passed,
+            "assertions": assertion_list,
         })
-    return results
+    return results

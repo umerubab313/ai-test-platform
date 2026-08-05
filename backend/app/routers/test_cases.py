@@ -97,11 +97,19 @@ def list_test_cases(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> Test
     )
 
 
+@router.get("/test-cases/{test_case_id}", response_model=TestCaseRead)
+def get_test_case(test_case_id: uuid.UUID, db: Session = Depends(get_db)) -> TestCaseRead:
+    """Fetch a single test case by ID."""
+    test_case = _get_test_case_or_404(test_case_id, db)
+    return _to_read_schema(test_case)
+
+
 @router.patch("/test-cases/{test_case_id}", response_model=TestCaseRead)
+@router.put("/test-cases/{test_case_id}", response_model=TestCaseRead)
 def update_test_case(
     test_case_id: uuid.UUID, payload: TestCaseUpdate, db: Session = Depends(get_db)
 ) -> TestCaseRead:
-    """Apply a partial edit to an AI-generated test case."""
+    """Apply an edit to an AI-generated test case."""
     test_case = _get_test_case_or_404(test_case_id, db)
     updates = payload.model_dump(exclude_unset=True, mode="json")
     if "input_payload" in updates:
@@ -117,6 +125,15 @@ def update_test_case(
     return _to_read_schema(test_case)
 
 
+@router.delete("/test-cases/{test_case_id}", status_code=status.HTTP_200_OK)
+def delete_test_case(test_case_id: uuid.UUID, db: Session = Depends(get_db)) -> dict[str, str]:
+    """Delete a test case by ID."""
+    test_case = _get_test_case_or_404(test_case_id, db)
+    db.delete(test_case)
+    db.commit()
+    return {"status": "deleted", "id": str(test_case_id)}
+
+
 @router.post("/test-cases/{test_case_id}/approve", response_model=TestCaseApproveResponse)
 def approve_test_case(
     test_case_id: uuid.UUID, db: Session = Depends(get_db)
@@ -125,4 +142,4 @@ def approve_test_case(
     test_case = _get_test_case_or_404(test_case_id, db)
     test_case.approved = True
     db.commit()
-    return TestCaseApproveResponse(id=test_case.id, approved=True)
+    return TestCaseApproveResponse(id=test_case.id, approved=True)

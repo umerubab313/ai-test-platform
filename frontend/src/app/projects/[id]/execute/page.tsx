@@ -4,8 +4,10 @@ import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { LiveFeed } from "@/components/execution/LiveFeed";
 import { StepIndicator } from "@/components/layout/StepIndicator";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -60,6 +62,14 @@ export default function ExecutePage() {
   const progressValue =
     totalCount > 0 ? Math.min(100, (completedCount / totalCount) * 100) : 0;
 
+  // Determine current execution status
+  const statusState = useMemo(() => {
+    if (error && !isReconnecting && !isComplete) return "FAILED";
+    if (isComplete) return failedCount > 0 ? "FAILED" : "COMPLETED";
+    if (isConnected) return "RUNNING";
+    return "PENDING";
+  }, [error, isReconnecting, isComplete, failedCount, isConnected]);
+
   const runCompletionSyncedRef = useRef(false);
 
   useEffect(() => {
@@ -80,13 +90,13 @@ export default function ExecutePage() {
     runCompletionSyncedRef.current = true;
     setRunResult({
       ...currentRun,
-      status: "completed",
+      status: failedCount > 0 ? "failed" : "completed",
       total_tests: summary.total,
       passed: summary.passed,
       failed: summary.failed,
       skipped: Math.max(0, summary.total - summary.passed - summary.failed),
     });
-  }, [isComplete, summary, currentRun, setRunResult]);
+  }, [isComplete, summary, currentRun, setRunResult, failedCount]);
 
   if (!currentRun) {
     return (
@@ -121,12 +131,38 @@ export default function ExecutePage() {
 
       <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
-            Step 5 — Execute Tests
-          </p>
-          <CardTitle className="font-heading text-xl text-[#F5F5F5]">
-            Live execution
-          </CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
+                Step 5 — Execute Tests
+              </p>
+              <CardTitle className="font-heading text-xl text-[#F5F5F5]">
+                Live execution
+              </CardTitle>
+            </div>
+
+            {/* Execution State Badges */}
+            {statusState === "PENDING" && (
+              <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-xs flex items-center gap-1.5 px-3 py-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> PENDING
+              </Badge>
+            )}
+            {statusState === "RUNNING" && (
+              <Badge className="border-lime-cyber/40 bg-lime-cyber/10 text-lime-cyber font-mono text-xs flex items-center gap-1.5 px-3 py-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-lime-cyber" /> RUNNING
+              </Badge>
+            )}
+            {statusState === "COMPLETED" && (
+              <Badge className="border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono text-xs flex items-center gap-1.5 px-3 py-1">
+                <CheckCircle2 className="h-3.5 w-3.5" /> COMPLETED
+              </Badge>
+            )}
+            {statusState === "FAILED" && (
+              <Badge className="border-red-500/40 bg-red-500/10 text-red-400 font-mono text-xs flex items-center gap-1.5 px-3 py-1">
+                <XCircle className="h-3.5 w-3.5" /> FAILED
+              </Badge>
+            )}
+          </div>
           <CardDescription className="font-body text-[#F5F5F5]/60">
             Newman results stream in over WebSocket as each approved test case
             completes.
@@ -134,6 +170,23 @@ export default function ExecutePage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Status Banners */}
+          {statusState === "COMPLETED" && (
+            <div className="flex items-center gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-300 font-mono text-sm">
+              <CheckCircle2 className="h-5 w-5 shrink-0" />
+              <span>Execution finished! All {totalCount} test cases executed successfully.</span>
+            </div>
+          )}
+
+          {statusState === "FAILED" && (
+            <div className="flex items-center gap-3 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-red-300 font-mono text-sm">
+              <XCircle className="h-5 w-5 shrink-0" />
+              <span>
+                {error ? `Execution error: ${error}` : `Execution complete with ${failedCount} failure(s). Check logs below.`}
+              </span>
+            </div>
+          )}
+
           <div className="rounded-lg border border-indigo-electric/20 bg-graphite/60 p-4">
             <div className="mb-4 grid grid-cols-3 gap-4 text-center">
               <div>
@@ -215,3 +268,4 @@ export default function ExecutePage() {
     </div>
   );
 }
+

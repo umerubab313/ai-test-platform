@@ -1,8 +1,13 @@
 """Pydantic schemas for test execution runs."""
 
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel
+
+
+class RunCreatePayload(BaseModel):
+    ticket_id: uuid.UUID
 
 
 class RunCreateResponse(BaseModel):
@@ -23,3 +28,6 @@ class RunResponse(BaseModel):
     passed: int
     failed: int
     skipped: int
+    executed_at: datetime | None = None
+    completed_at: datetime | None = None
+
