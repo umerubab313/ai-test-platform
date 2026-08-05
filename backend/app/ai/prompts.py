@@ -14,7 +14,6 @@ Return ONLY valid JSON. No explanation. No markdown fences."""
 BUG_REPORT_SYSTEM_PROMPT = """You are a Senior QA Engineer writing formal defect reports.
 Return ONLY valid JSON. No explanation. No markdown fences."""
 
-
 def build_test_case_prompt(
     ticket_title: str,
     ticket_description: str,
@@ -34,6 +33,13 @@ Only generate test cases for the endpoint(s) in the map that are actually
 relevant to this specific ticket. Ignore unrelated endpoints — the map
 covers the whole project, not just this ticket.
 
+STRICT OUTPUT RULES:
+- Every field must be a literal JSON value — never write code expressions
+  like "A".repeat(255) or string concatenation. If you need a long string,
+  write out the actual repeated characters as a literal string.
+- expected_status_code must be a single integer, never an array or list
+  of multiple possible codes. Pick the one most likely status code.
+
 Generate test cases for types: happy_path, negative, validation, security, edge_case
 
 Return JSON format:
@@ -52,6 +58,44 @@ Return JSON format:
     }}
   ]
 }}"""
+
+# def build_test_case_prompt(
+#     ticket_title: str,
+#     ticket_description: str,
+#     acceptance_criteria: str,
+#     endpoint_map: list[dict],
+# ) -> str:
+#     """Build the user-turn prompt for test case generation (SDD 8.2, Prompt 1)."""
+#     return f"""TICKET:
+# Title: {ticket_title}
+# Description: {ticket_description}
+# Acceptance Criteria: {acceptance_criteria}
+
+# ENDPOINT MAP (all endpoints in this project):
+# {json.dumps(endpoint_map)}
+
+# Only generate test cases for the endpoint(s) in the map that are actually
+# relevant to this specific ticket. Ignore unrelated endpoints — the map
+# covers the whole project, not just this ticket.
+
+# Generate test cases for types: happy_path, negative, validation, security, edge_case
+
+# Return JSON format:
+# {{
+#   "test_cases": [
+#     {{
+#       "type": "happy_path",
+#       "title": "Create order with valid payload",
+#       "endpoint": "POST /api/orders",
+#       "method": "POST",
+#       "headers": {{ "Authorization": "Bearer {{token}}" }},
+#       "input_payload": {{ "product_id": 1, "quantity": 2 }},
+#       "expected_status_code": 201,
+#       "expected_response_contains": {{ "status": "pending" }},
+#       "assertion_notes": "Response must contain order id and status"
+#     }}
+#   ]
+# }}"""
 
 def build_bug_report_prompt(
     test_case: dict,

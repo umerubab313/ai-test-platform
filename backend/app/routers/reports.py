@@ -14,8 +14,9 @@ from app.models.test_case import TestCase
 from app.models.test_run import TestRun
 from app.report_pdf import build_report_pdf_bytes
 from app.schemas.report import BugReportItem, ReportCoverage, ReportResponse, ReportSummary
+from app.auth.dependencies import require_auth
 
-router = APIRouter(tags=["reports"])
+router = APIRouter(tags=["reports"], dependencies=[Depends(require_auth)])
 
 
 def _get_run_or_404(run_id: uuid.UUID, db: Session) -> TestRun:
@@ -28,13 +29,7 @@ def _get_run_or_404(run_id: uuid.UUID, db: Session) -> TestRun:
 
 @router.get("/runs/{run_id}/report", response_model=ReportResponse)
 def get_report(run_id: uuid.UUID, db: Session = Depends(get_db)) -> ReportResponse:
-    """Build the final report for a completed run.
-
-    Coverage and results reflect real DB data where available. Until
-    Newman execution exists (Phase 7), 'endpoints_tested' and 'results'
-    will read as 0 / empty for any run — that's accurate, since nothing
-    has actually executed yet.
-    """
+    """Build the final report for a completed run, using real Newman execution data."""
     run = _get_run_or_404(run_id, db)
     total_endpoints = (
         db.query(TestCase.endpoint)
@@ -42,7 +37,8 @@ def get_report(run_id: uuid.UUID, db: Session = Depends(get_db)) -> ReportRespon
         .distinct()
         .count()
     )
-    endpoints_tested = 0
+    parsed_results = parse_results(run.newman_output_json) if run.newman_output_json else []
+    endpoints_tested = len({r["endpoint"] for r in parsed_results})
     pct = round((endpoints_tested / total_endpoints) * 100, 2) if total_endpoints else 0.0
 
     bug_rows = db.query(BugReport).filter(BugReport.run_id == run_id).all()
@@ -70,7 +66,7 @@ def get_report(run_id: uuid.UUID, db: Session = Depends(get_db)) -> ReportRespon
             total_endpoints=total_endpoints,
             pct=pct,
         ),
-        results=parse_results(run.newman_output_json) if run.newman_output_json else [],
+        results=parsed_results,
         bug_reports=bug_items,
     )
 
@@ -78,9 +74,6 @@ def get_report(run_id: uuid.UUID, db: Session = Depends(get_db)) -> ReportRespon
 @router.get("/runs/{run_id}/report/pdf")
 def get_report_pdf(run_id: uuid.UUID, db: Session = Depends(get_db)) -> Response:
     """Download the report as a PDF.
-
-    PLACEHOLDER: PDF generation is built in Phase 9. Confirms the run
-    exists now so the route is real, but the actual file isn't built yet.
     """
     report = get_report(run_id, db)
     pdf_bytes = build_report_pdf_bytes(report)

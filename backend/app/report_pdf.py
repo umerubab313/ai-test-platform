@@ -90,12 +90,16 @@ def _results_section(results: list[dict], styles: Any) -> list[Any]:
     if not results:
         return [Paragraph("No execution results available for this run.", styles["Italic"])]
 
+    cell_style = styles["Normal"].clone("cell")
+    cell_style.fontSize = 8
+    cell_style.leading = 10
+
     header = ["Title", "Method", "Status", "RT (ms)", "Passed"]
-    rows: list[list[str]] = [header]
+    rows: list[list[Any]] = [header]
     for r in results:
         rows.append(
             [
-                str(r.get("title") or ""),
+                Paragraph(_escape(str(r.get("title") or "")), cell_style),
                 str(r.get("method") or ""),
                 "" if r.get("status_code") is None else str(r.get("status_code")),
                 "" if r.get("response_time_ms") is None else str(r.get("response_time_ms")),
@@ -103,7 +107,23 @@ def _results_section(results: list[dict], styles: Any) -> list[Any]:
             ]
         )
 
-    table = Table(rows, colWidths=[2.9 * inch, 0.8 * inch, 0.7 * inch, 0.8 * inch, 0.7 * inch])
+    table = Table(rows, colWidths=[3.0 * inch, 0.9 * inch, 0.8 * inch, 0.9 * inch, 0.8 * inch])
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ]
+        )
+    )
+    return [table]
+
+    table = Table(rows, colWidths=[3.0 * inch, 0.9 * inch, 0.8 * inch, 0.9 * inch, 0.8 * inch])
     table.setStyle(
         TableStyle(
             [

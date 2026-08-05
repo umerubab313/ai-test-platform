@@ -35,13 +35,13 @@ services:
       - redis
     command: celery -A app.celery_app worker --loglevel=info
 
-  frontend:
-    build: ./frontend
-    env_file: ./frontend/.env.local
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+  # frontend:
+  #   build: ./frontend
+  #   env_file: ./frontend/.env.local
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
 volumes:
   pgdata:
   redisdata:

@@ -34,6 +34,9 @@ def generate_test_cases_task(ticket_id: str) -> dict:
             from app.models.project import Project
             project = db.query(Project).filter(Project.id == ticket.project_id).first()
         if not project or not project.endpoint_map:
+            ticket.generation_status = "failed"
+            ticket.generation_error = "NO_ENDPOINT_MAP"
+            db.commit()
             return {"status": "failed", "error": "NO_ENDPOINT_MAP"}
 
         user_prompt = build_test_case_prompt(
@@ -47,6 +50,9 @@ def generate_test_cases_task(ticket_id: str) -> dict:
                 generate_with_retry(TEST_CASE_SYSTEM_PROMPT, user_prompt, TEST_CASE_RESPONSE_SCHEMA)
             )
         except AIGenerationError as exc:
+            ticket.generation_status = "failed"
+            ticket.generation_error = str(exc)
+            db.commit()
             return {"status": "failed", "error": str(exc)}
 
         for tc in result["test_cases"]:
@@ -62,6 +68,8 @@ def generate_test_cases_task(ticket_id: str) -> dict:
                 expected_response_json=tc.get("expected_response_contains"),
                 assertion_notes=tc.get("assertion_notes"),
             ))
+        ticket.generation_status = "completed"
+        ticket.generation_error = None
         db.commit()
         return {"status": "completed", "generated_count": len(result["test_cases"])}
     finally:

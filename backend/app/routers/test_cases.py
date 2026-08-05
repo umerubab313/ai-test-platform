@@ -21,8 +21,9 @@ from app.schemas.test_case import (
     TestCaseUpdate,
 )
 
+from app.auth.dependencies import require_auth
 
-router = APIRouter(tags=["test_cases"])
+router = APIRouter(tags=["test_cases"], dependencies=[Depends(require_auth)])
 
 
 def _get_ticket_or_404(ticket_id: uuid.UUID, db: Session) -> Ticket:
@@ -79,21 +80,21 @@ def generate_test_cases(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> 
                 "message": "Upload a ZIP file or GitHub URL for this project before generating test cases.",
             },
         )
+    ticket.generation_status = "generating"
+    ticket.generation_error = None
+    db.commit()
     task = generate_test_cases_task.delay(str(ticket_id))
     return GenerateResponse(task_id=task.id, status="generating")
 
 
 @router.get("/tickets/{ticket_id}/test-cases", response_model=TestCaseListResponse)
 def list_test_cases(ticket_id: uuid.UUID, db: Session = Depends(get_db)) -> TestCaseListResponse:
-    """Poll for a ticket's generated test cases.
-
-    Since generation isn't wired to Celery yet, this always reports
-    'completed' and returns whatever test cases currently exist for this
-    ticket (an empty list, until Phase 5/6 are built).
-    """
-    _get_ticket_or_404(ticket_id, db)
+    ticket = _get_ticket_or_404(ticket_id, db)
     rows = db.query(TestCase).filter(TestCase.ticket_id == ticket_id).all()
-    return TestCaseListResponse(status="completed", test_cases=[_to_read_schema(r) for r in rows])
+    return TestCaseListResponse(
+        status=ticket.generation_status,
+        test_cases=[_to_read_schema(r) for r in rows],
+    )
 
 
 @router.patch("/test-cases/{test_case_id}", response_model=TestCaseRead)

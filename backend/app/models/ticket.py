@@ -41,3 +41,5 @@ class Ticket(Base):
         back_populates="ticket",
         cascade="all, delete-orphan",
     )
+    generation_status: Mapped[str] = mapped_column(String(20), nullable=False, default="not_started")
+    generation_error: Mapped[str | None] = mapped_column(Text, nullable=True)

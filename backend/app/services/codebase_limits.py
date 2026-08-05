@@ -1,5 +1,7 @@
 """Shared limits and folder-skip rules for handling uploaded/cloned codebases."""
 
+import tempfile
+
 import os
 from pathlib import Path
 from typing import Iterator
@@ -33,3 +35,17 @@ def iter_source_files(root_dir: Path, suffix: str, only_in_dir: str | None = Non
         for filename in filenames:
             if filename.endswith(suffix):
                 yield Path(dirpath) / filename
+
+
+def get_project_temp_dir(upload_id: str) -> Path:
+    """Return an unambiguous, fully-qualified temp directory for an upload.
+
+    Uses tempfile.gettempdir() instead of a bare "/tmp/..." path — on
+    Windows, a path with no drive letter can be interpreted differently
+    by Python (via the current drive) vs. MSYS-based tools like Git for
+    Windows (which may resolve it relative to Git's own install folder),
+    causing the two to silently disagree about which folder is empty.
+    tempfile.gettempdir() always returns a real, absolute, drive-lettered
+    path on Windows, and the standard /tmp path on Linux/Docker.
+    """
+    return Path(tempfile.gettempdir()) / "ai-test-platform-uploads" / upload_id

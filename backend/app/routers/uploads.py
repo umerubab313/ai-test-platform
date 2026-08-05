@@ -8,14 +8,14 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from app.tasks.parse_task import parse_codebase_task
-
-
+from app.celery_app import celery_app
+from celery.result import AsyncResult
 from app.database import get_db
 from app.models.project import Project
 from app.schemas.upload import GithubUploadRequest, UploadResponse
 from app.auth.dependencies import require_auth
 from app.config import get_settings
-from app.services.codebase_limits import count_relevant_files
+from app.services.codebase_limits import count_relevant_files, get_project_temp_dir
 
 router = APIRouter(tags=["uploads"], dependencies=[Depends(require_auth)])
 
@@ -80,7 +80,7 @@ async def upload_codebase(
         content = await file.read()
         if len(content) > MAX_UPLOAD_BYTES:
             raise HTTPException(400, detail={"error": "FILE_TOO_LARGE", "message": "ZIP files must be under 50MB"})
-        dest_dir = Path(f"/tmp/projects/{upload_id}")
+        dest_dir = get_project_temp_dir(str(upload_id))
         dest_dir.mkdir(parents=True, exist_ok=True)
         _safe_extract_zip(content, dest_dir)
         file_count = count_relevant_files(dest_dir)
@@ -94,10 +94,11 @@ async def upload_codebase(
                     "message": f"Codebase has {file_count} files, exceeding the {settings.max_file_count} limit",
                 },
             )
+        task = parse_codebase_task.delay(str(upload_id), str(project_id))
     else:
         GithubUploadRequest.model_validate({"github_url": github_url})
+        task = parse_codebase_task.delay(str(upload_id), str(project_id), github_url)
 
-    task = parse_codebase_task.delay(str(upload_id), str(project_id))
     return UploadResponse(upload_id=upload_id, task_id=task.id, status="processing")
 
 @router.get("/uploads/{task_id}/result")

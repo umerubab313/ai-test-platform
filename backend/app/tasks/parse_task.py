@@ -12,8 +12,9 @@ from app.models.project import Project
 from app.parsers.fastapi_parser import FastAPIParser
 from app.parsers.laravel import LaravelParser
 from app.parsers.spring_boot import SpringBootParser
-from app.services.codebase_limits import count_relevant_files
+from app.services.codebase_limits import count_relevant_files, get_project_temp_dir
 from urllib.parse import urlsplit, urlunsplit
+import shutil
 
 settings = get_settings()
 
@@ -33,7 +34,7 @@ def parse_codebase_task(upload_id: str, project_id: str, github_url: str | None 
         if project is None:
             return {"status": "failed", "error": "Project not found"}
 
-        dest_dir = Path(f"/tmp/projects/{upload_id}")
+        dest_dir = get_project_temp_dir(upload_id)
         if github_url:
             clone_error = _clone_repo(github_url, dest_dir)
             if clone_error is not None:
@@ -88,6 +89,8 @@ def _parse_with_timeout(parser, dest_dir: Path) -> list[dict] | None:
 
 def _clone_repo(github_url: str, dest_dir: Path) -> dict | None:
     """Shallow-clone a GitHub or Bitbucket repo. Returns an error dict on failure, else None."""
+    if dest_dir.exists():
+        shutil.rmtree(dest_dir, ignore_errors=True)
     dest_dir.mkdir(parents=True, exist_ok=True)
     clone_url = _with_credentials(github_url)
     try:
