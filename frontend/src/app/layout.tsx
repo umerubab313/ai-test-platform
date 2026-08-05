@@ -40,11 +40,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} min-h-screen overflow-x-hidden bg-graphite font-body text-[#F5F5F5] antialiased`}
+        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} min-h-screen overflow-x-hidden bg-background font-body text-foreground antialiased`}
       >
-        <header className="sticky top-0 z-50 border-b border-indigo-electric/20 bg-graphite/95 backdrop-blur-sm">
-          <nav className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-            <Logo className="shrink-0" />
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+          <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
+            <Logo className="min-w-0 shrink" />
             <NavStepIndicator />
           </nav>
         </header>

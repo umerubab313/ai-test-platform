@@ -33,7 +33,7 @@ export function MswProvider({ children }: { children: React.ReactNode }) {
   if (!ready) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <p className="font-mono text-xs uppercase tracking-wider text-[#F5F5F5]/50">
+        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
           Starting mock API…
         </p>
       </div>

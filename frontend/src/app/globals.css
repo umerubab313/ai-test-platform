@@ -4,31 +4,51 @@
 
 @layer base {
   :root {
-    --background: 0 0% 11%;
-    --foreground: 0 0% 96%;
-    --card: 0 0% 13%;
-    --card-foreground: 0 0% 96%;
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 0 0% 96%;
-    --primary-foreground: 0 0% 11%;
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 96%;
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 0 0% 16%;
-    --accent-foreground: 0 0% 96%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 96%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Neutral dark slate — not a saturated tint */
+    --background: 215 20% 6%;
+    --foreground: 210 20% 93%;
+    --card: 215 16% 9%;
+    --card-foreground: 210 20% 93%;
+    --popover: 215 16% 9%;
+    --popover-foreground: 210 20% 93%;
+    --primary: 210 20% 93%;
+    --primary-foreground: 215 20% 6%;
+    --secondary: 215 14% 14%;
+    --secondary-foreground: 210 20% 93%;
+    /* Solid muted text ≥ WCAG AA on --background (~7:1) */
+    --muted: 215 14% 14%;
+    --muted-foreground: 215 12% 68%;
+    --accent: 215 14% 14%;
+    --accent-foreground: 210 20% 93%;
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 215 12% 18%;
+    --input: 215 12% 18%;
+    /* Indigo focus ring — accent, not body */
+    --ring: 262 100% 62%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     --radius: 0.5rem;
+
+    /* Brand accents — buttons, links, highlights only */
+    --accent-fuchsia: 330 100% 59%;
+    --accent-indigo: 262 100% 50%;
+    --accent-lime: 72 100% 51%;
+
+    /* Status — single source of truth across LiveFeed / accordion / runs */
+    --status-success: 72 100% 51%;
+    --status-success-fg: 0 0% 5%;
+    --status-fail: 330 100% 59%;
+    --status-fail-fg: 0 0% 100%;
+    --status-pending: 38 92% 55%;
+    --status-pending-fg: 0 0% 8%;
+    --status-running: 190 90% 48%;
+    --status-running-fg: 0 0% 5%;
+    --status-completed: 152 70% 42%;
+    --status-completed-fg: 0 0% 100%;
   }
 }
 
@@ -38,11 +58,9 @@
   }
 
   body {
-    @apply font-body antialiased;
+    @apply bg-background font-body text-foreground antialiased;
     position: relative;
     min-height: 100vh;
-    background-color: #1c1c1c;
-    color: #f5f5f5;
   }
 
   body::before {
@@ -77,6 +95,32 @@
   }
 }
 
+@layer components {
+  .surface-card {
+    @apply rounded-xl border border-border bg-card/90 text-card-foreground shadow-none;
+  }
+
+  .surface-inset {
+    @apply rounded-lg border border-border bg-muted/40;
+  }
+
+  .empty-state {
+    @apply rounded-lg border border-border bg-muted/40 px-4 py-8 text-center;
+  }
+
+  .empty-state-text {
+    @apply font-body text-sm text-muted-foreground;
+  }
+
+  .page-eyebrow {
+    @apply font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric;
+  }
+
+  .interactive-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
 @layer utilities {
   .glow-fuchsia {
     box-shadow:
@@ -97,6 +141,18 @@
       0 0 12px rgba(207, 255, 4, 0.4),
       0 0 28px rgba(207, 255, 4, 0.22),
       0 0 48px rgba(207, 255, 4, 0.1);
+  }
+
+  .text-brand-gradient {
+    background-image: linear-gradient(
+      105deg,
+      hsl(var(--accent-fuchsia)) 0%,
+      hsl(var(--accent-indigo)) 55%,
+      hsl(var(--accent-lime)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .progress-indeterminate {

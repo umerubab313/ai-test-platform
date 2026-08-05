@@ -206,12 +206,12 @@ export function TestCaseEditModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-indigo-electric/20 bg-graphite text-[#F5F5F5]">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-indigo-electric/20 bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="font-heading text-[#F5F5F5]">
+          <DialogTitle className="font-heading">
             Edit test case
           </DialogTitle>
-          <DialogDescription className="font-body text-[#F5F5F5]/60">
+          <DialogDescription className="font-body">
             Update request details and assertions. JSON fields are validated
             before save.
           </DialogDescription>
@@ -230,7 +230,7 @@ export function TestCaseEditModal({
               id="edit-title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="border-indigo-electric/20 bg-[#1C1C1C] font-body"
+              className="border-indigo-electric/20 bg-card font-body"
               required
             />
           </div>
@@ -242,7 +242,7 @@ export function TestCaseEditModal({
                 id="edit-method"
                 value={method}
                 onChange={(event) => setMethod(event.target.value)}
-                className="border-indigo-electric/20 bg-[#1C1C1C] font-mono uppercase"
+                className="border-indigo-electric/20 bg-card font-mono uppercase"
                 required
               />
             </div>
@@ -252,7 +252,7 @@ export function TestCaseEditModal({
                 id="edit-endpoint"
                 value={endpoint}
                 onChange={(event) => setEndpoint(event.target.value)}
-                className="border-indigo-electric/20 bg-[#1C1C1C] font-mono"
+                className="border-indigo-electric/20 bg-card font-mono"
                 required
               />
             </div>
@@ -265,14 +265,14 @@ export function TestCaseEditModal({
               value={headersText}
               onChange={(event) => handleHeadersChange(event.target.value)}
               placeholder='{"Authorization": "Bearer token"}'
-              className="min-h-[100px] border-indigo-electric/20 bg-[#1C1C1C] font-mono text-sm"
+              className="min-h-[100px] border-indigo-electric/20 bg-card font-mono text-sm"
               aria-invalid={Boolean(headersError)}
             />
             {headersError ? (
               <p className="text-sm text-red-500">{headersError}</p>
             ) : null}
             {headersPreview.ok && headersText.trim() ? (
-              <pre className="max-h-32 overflow-auto rounded-md border border-indigo-electric/15 bg-[#1C1C1C] p-3 font-mono text-xs text-lime-cyber/90">
+              <pre className="max-h-32 overflow-auto rounded-md border border-indigo-electric/15 bg-card p-3 font-mono text-xs text-lime-cyber/90">
                 {JSON.stringify(headersPreview.data, null, 2)}
               </pre>
             ) : null}
@@ -285,14 +285,14 @@ export function TestCaseEditModal({
               value={payloadText}
               onChange={(event) => handlePayloadChange(event.target.value)}
               placeholder='{"email": "user@example.com"}'
-              className="min-h-[120px] border-indigo-electric/20 bg-[#1C1C1C] font-mono text-sm"
+              className="min-h-[120px] border-indigo-electric/20 bg-card font-mono text-sm"
               aria-invalid={Boolean(payloadError)}
             />
             {payloadError ? (
               <p className="text-sm text-red-500">{payloadError}</p>
             ) : null}
             {payloadPreview.ok && payloadText.trim() ? (
-              <pre className="max-h-40 overflow-auto rounded-md border border-indigo-electric/15 bg-[#1C1C1C] p-3 font-mono text-xs text-lime-cyber/90">
+              <pre className="max-h-40 overflow-auto rounded-md border border-indigo-electric/15 bg-card p-3 font-mono text-xs text-lime-cyber/90">
                 {JSON.stringify(payloadPreview.data, null, 2)}
               </pre>
             ) : null}
@@ -305,7 +305,7 @@ export function TestCaseEditModal({
               type="number"
               value={expectedStatusCode}
               onChange={(event) => setExpectedStatusCode(event.target.value)}
-              className="border-indigo-electric/20 bg-[#1C1C1C] font-mono"
+              className="border-indigo-electric/20 bg-card font-mono"
               required
             />
             {statusError ? (
@@ -319,7 +319,7 @@ export function TestCaseEditModal({
               id="edit-notes"
               value={assertionNotes}
               onChange={(event) => setAssertionNotes(event.target.value)}
-              className="min-h-[80px] border-indigo-electric/20 bg-[#1C1C1C] font-body text-sm"
+              className="min-h-[80px] border-indigo-electric/20 bg-card font-body text-sm"
             />
           </div>
 

@@ -18,11 +18,11 @@ function StatTile({ label, value, accentClass, valueClass }: StatTileProps) {
   return (
     <div
       className={cn(
-        "rounded-lg border bg-graphite/60 p-4",
+        "rounded-lg border bg-muted/60 p-4",
         accentClass
       )}
     >
-      <p className="font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/50">
+      <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       <p className={cn("mt-1 font-heading text-2xl font-bold", valueClass)}>
@@ -51,14 +51,14 @@ export function SummaryBar({ summary, coverage, className }: SummaryBarProps) {
       <StatTile
         label="Passed"
         value={String(summary.passed)}
-        accentClass="border-lime-cyber/30"
-        valueClass="text-lime-cyber"
+        accentClass="border-status-success/30"
+        valueClass="text-status-success"
       />
       <StatTile
         label="Failed"
         value={String(summary.failed)}
-        accentClass="border-fuchsia/30"
-        valueClass="text-fuchsia"
+        accentClass="border-status-fail/30"
+        valueClass="text-status-fail"
       />
       <StatTile
         label="Coverage"
@@ -69,8 +69,8 @@ export function SummaryBar({ summary, coverage, className }: SummaryBarProps) {
       <StatTile
         label="Avg response"
         value={formatAvgResponseTime(summary.avg_ms)}
-        accentClass="border-[#F5F5F5]/20"
-        valueClass="font-mono text-[#F5F5F5]"
+        accentClass="border-border"
+        valueClass="font-mono text-foreground"
       />
     </div>
   );

@@ -53,9 +53,9 @@ export function TestCaseCard({ testCase, onApprove, onEdit }: TestCaseCardProps)
         }
       }}
       className={cn(
-        "relative w-full cursor-pointer border border-indigo-electric/15 bg-[#1C1C1C]/80 shadow-none transition-colors hover:border-indigo-electric/30",
+        "relative w-full cursor-pointer transition-colors hover:border-indigo-electric/30",
         "border-l-4",
-        testCase.approved ? "border-l-lime-cyber" : "border-l-zinc-700"
+        testCase.approved ? "border-l-status-success" : "border-l-border"
       )}
     >
       <CardHeader className="space-y-3">
@@ -68,7 +68,7 @@ export function TestCaseCard({ testCase, onApprove, onEdit }: TestCaseCardProps)
           >
             <Label
               htmlFor={`approve-${testCase.id}`}
-              className="font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/50"
+              className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
             >
               Approve
             </Label>
@@ -82,7 +82,7 @@ export function TestCaseCard({ testCase, onApprove, onEdit }: TestCaseCardProps)
           </div>
         </div>
 
-        <CardTitle className="font-heading text-base font-semibold text-[#F5F5F5]">
+        <CardTitle className="font-heading text-base font-semibold">
           {testCase.title}
         </CardTitle>
         <p className="break-all font-mono text-sm text-indigo-electric">
@@ -98,26 +98,26 @@ export function TestCaseCard({ testCase, onApprove, onEdit }: TestCaseCardProps)
             event.stopPropagation();
             setPayloadOpen((open) => !open);
           }}
-          className="flex w-full items-center justify-between rounded-md border border-indigo-electric/15 bg-graphite/60 px-3 py-2 text-left"
+          className="flex w-full items-center justify-between rounded-md border border-indigo-electric/15 bg-muted/40 px-3 py-2 text-left"
         >
-          <span className="font-mono text-xs uppercase tracking-wider text-[#F5F5F5]/60">
+          <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
             Payload preview
           </span>
           <ChevronDown
             className={cn(
-              "h-4 w-4 shrink-0 text-[#F5F5F5]/50 transition-transform",
+              "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
               payloadOpen && "rotate-180"
             )}
           />
         </button>
 
         {payloadOpen ? (
-          <pre className="max-h-40 overflow-auto rounded-md border border-indigo-electric/15 bg-graphite p-3 font-mono text-xs text-[#F5F5F5]/80">
+          <pre className="max-h-40 overflow-auto rounded-md border border-indigo-electric/15 bg-muted/40 p-3 font-mono text-xs text-muted-foreground">
             {formatPayload(testCase.input_payload)}
           </pre>
         ) : null}
 
-        <p className="font-mono text-xs text-[#F5F5F5]/70">
+        <p className="font-mono text-xs text-muted-foreground">
           Expected status:{" "}
           <span className="text-lime-cyber">{testCase.expected_status_code}</span>
         </p>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { StepIndicator } from "@/components/layout/StepIndicator";
+import { EmptyState } from "@/components/layout/EmptyState";
 import { TestCaseCard } from "@/components/test-cases/TestCaseCard";
 import { TestCaseEditModal } from "@/components/test-cases/TestCaseEditModal";
 import { Badge } from "@/components/ui/badge";
@@ -187,15 +188,13 @@ export default function ReviewPage() {
           <StepIndicator currentStep={4} variant="full" />
         </div>
 
-        <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
+        <Card>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
-                  Step 4 — Review Test Cases
-                </p>
+                <p className="page-eyebrow">Step 4 — Review Test Cases</p>
                 <div className="flex flex-wrap items-center gap-3">
-                  <CardTitle className="font-heading text-xl text-[#F5F5F5]">
+                  <CardTitle className="font-heading text-xl">
                     Review & approve
                   </CardTitle>
                   {aiModel ? (
@@ -210,7 +209,7 @@ export default function ReviewPage() {
                     )
                   ) : null}
                 </div>
-                <CardDescription className="font-body text-[#F5F5F5]/60">
+                <CardDescription className="font-body">
                   Inspect generated cases by scenario type. Approve the ones you
                   want included in the Newman run.
                 </CardDescription>
@@ -236,14 +235,12 @@ export default function ReviewPage() {
                 <div className="relative mx-auto h-2 w-64 overflow-hidden rounded-full bg-indigo-electric/20">
                   <div className="progress-indeterminate absolute inset-y-0 w-1/3 rounded-full bg-lime-cyber" />
                 </div>
-                <p className="font-mono text-sm text-[#F5F5F5]/70">
+                <p className="font-mono text-sm text-muted-foreground">
                   AI is generating test cases...
                 </p>
               </div>
             ) : testCases.length === 0 ? (
-              <p className="py-8 text-center font-body text-sm text-[#F5F5F5]/60">
-                No test cases in store. Generate tests from the ticket step first.
-              </p>
+              <EmptyState message="No test cases in store. Generate tests from the ticket step first." />
             ) : (
               <Tabs
                 value={activeTab}
@@ -257,7 +254,7 @@ export default function ReviewPage() {
                       <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
+                        className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-foreground"
                       >
                         {tab.label} ({count})
                       </TabsTrigger>
@@ -272,9 +269,9 @@ export default function ReviewPage() {
                     className="space-y-4"
                   >
                     {groupedTestCases[tab.value].length === 0 ? (
-                      <p className="py-8 text-center font-mono text-sm text-[#F5F5F5]/40">
-                        No {tab.label.toLowerCase()} cases generated.
-                      </p>
+                      <EmptyState
+                        message={`No ${tab.label.toLowerCase()} cases generated.`}
+                      />
                     ) : (
                       <div className="flex w-full flex-col gap-4">
                         {groupedTestCases[tab.value].map((testCase) => (
@@ -305,9 +302,9 @@ export default function ReviewPage() {
           }}
         />
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-indigo-electric/20 bg-graphite/95 backdrop-blur-sm">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur-sm">
           <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p className="font-mono text-sm text-[#F5F5F5]/80">
+            <p className="font-mono text-sm text-muted-foreground">
               {approvedCount}/{totalCount} approved
             </p>
 
@@ -333,7 +330,7 @@ export default function ReviewPage() {
                     </Button>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent className="border border-indigo-electric/20 bg-[#1C1C1C] text-[#F5F5F5]">
+                <TooltipContent className="border border-border bg-card text-foreground">
                   Approve at least one test case
                 </TooltipContent>
               </Tooltip>

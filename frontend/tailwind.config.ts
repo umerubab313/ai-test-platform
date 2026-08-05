@@ -10,10 +10,12 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
+  			/* Accents — buttons, links, highlights only */
   			fuchsia: "#FF2E9A",
   			"indigo-electric": "#5D00FF",
   			"lime-cyber": "#CFFF04",
-  			graphite: "#1C1C1C",
+  			/* Neutral slate near-black (was saturated #1C1C1C) */
+  			graphite: "#0B0F14",
   			background: "hsl(var(--background))",
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -47,6 +49,18 @@ const config: Config = {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
+  			status: {
+  				success: 'hsl(var(--status-success))',
+  				'success-foreground': 'hsl(var(--status-success-fg))',
+  				fail: 'hsl(var(--status-fail))',
+  				'fail-foreground': 'hsl(var(--status-fail-fg))',
+  				pending: 'hsl(var(--status-pending))',
+  				'pending-foreground': 'hsl(var(--status-pending-fg))',
+  				running: 'hsl(var(--status-running))',
+  				'running-foreground': 'hsl(var(--status-running-fg))',
+  				completed: 'hsl(var(--status-completed))',
+  				'completed-foreground': 'hsl(var(--status-completed-fg))',
+  			},
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',

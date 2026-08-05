@@ -38,15 +38,15 @@ export default function HomePage() {
     <div className="-my-6 flex min-w-0 flex-col overflow-x-hidden">
       <section className="flex min-h-[calc(100vh-3rem)] flex-col justify-center border-b border-indigo-electric/10 py-16 sm:py-20">
         <div className="max-w-3xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-indigo-electric">
+          <p className="page-eyebrow mb-4">
             AI-Powered API Test Automation
           </p>
 
-          <h1 className="font-heading text-4xl font-bold leading-[1.1] tracking-tight text-[#F5F5F5] sm:text-5xl lg:text-6xl">
+          <h1 className="font-heading text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Ship API tests in minutes, not hours
           </h1>
 
-          <p className="mt-6 max-w-2xl font-body text-base leading-relaxed text-[#F5F5F5]/70 sm:text-lg">
+          <p className="mt-6 max-w-2xl font-body text-base leading-relaxed text-muted-foreground sm:text-lg">
             Point at your Laravel, FastAPI, or Spring Boot codebase. Describe a
             ticket. Get generated Postman-ready test cases, execute them against
             your base URL, and ship coverage reports — without hand-writing
@@ -62,7 +62,7 @@ export default function HomePage() {
               <Link href="/projects/new">New Project</Link>
             </Button>
 
-            <span className="hidden font-mono text-xs text-[#F5F5F5]/40 sm:inline">
+            <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
               POST /projects → parse → generate → run
             </span>
           </div>
@@ -71,10 +71,10 @@ export default function HomePage() {
 
       <section className="py-12 sm:py-16">
         <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-[#F5F5F5]/80">
+          <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Pipeline
           </h2>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/30">
+          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
             3 stages · zero manual scaffolding
           </span>
         </div>
@@ -83,7 +83,7 @@ export default function HomePage() {
           {features.map((feature) => (
             <article
               key={feature.title}
-              className={`rounded-lg border bg-[#1C1C1C]/80 p-5 ${feature.borderClass}`}
+              className={`rounded-lg border bg-card/80 p-5 ${feature.borderClass}`}
             >
               <div
                 className={`mb-4 inline-flex rounded-md border p-2.5 ${feature.iconBg} ${feature.borderClass}`}
@@ -91,11 +91,11 @@ export default function HomePage() {
                 <feature.icon className={`h-5 w-5 ${feature.iconClass}`} />
               </div>
 
-              <h3 className="font-heading text-base font-semibold text-[#F5F5F5]">
+              <h3 className="font-heading text-base font-semibold text-foreground">
                 {feature.title}
               </h3>
 
-              <p className="mt-2 font-body text-sm leading-relaxed text-[#F5F5F5]/60">
+              <p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground">
                 {feature.description}
               </p>
             </article>

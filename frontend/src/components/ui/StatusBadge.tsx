@@ -8,19 +8,24 @@ const statusBadgeVariants = cva(
   {
     variants: {
       variant: {
-        happy_path: "bg-lime-cyber text-black",
-        negative: "bg-fuchsia text-white",
+        happy_path: "bg-status-success text-status-success-foreground",
+        negative: "bg-status-fail text-status-fail-foreground",
         validation: "bg-indigo-electric text-white",
         security: "bg-fuchsia text-white glow-fuchsia",
         edge_case:
           "border border-dashed border-indigo-electric bg-indigo-electric/10 text-indigo-electric",
-        passed: "bg-lime-cyber text-black",
-        failed: "bg-fuchsia text-white",
-        pending: "bg-zinc-600/40 text-zinc-300",
-        critical: "bg-red-600/90 text-white",
+        passed: "bg-status-success text-status-success-foreground",
+        failed: "bg-status-fail text-status-fail-foreground",
+        pending:
+          "border border-status-pending/40 bg-status-pending/15 text-status-pending",
+        running:
+          "border border-status-running/40 bg-status-running/15 text-status-running",
+        completed:
+          "border border-status-completed/40 bg-status-completed/15 text-status-completed",
+        critical: "bg-status-fail text-status-fail-foreground",
         high: "bg-orange-500/90 text-black",
         medium: "bg-yellow-400/90 text-black",
-        low: "bg-zinc-600/60 text-zinc-300",
+        low: "bg-muted text-muted-foreground",
       },
     },
     defaultVariants: {

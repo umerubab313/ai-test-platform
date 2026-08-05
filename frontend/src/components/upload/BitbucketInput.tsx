@@ -43,7 +43,7 @@ export function BitbucketInput({
   return (
     <div className={cn("space-y-4", className)}>
       <div className="space-y-2">
-        <Label htmlFor="bitbucket_url" className="font-body text-[#F5F5F5]/80">
+        <Label htmlFor="bitbucket_url" className="font-body text-muted-foreground">
           Bitbucket repository URL
         </Label>
         <Input
@@ -59,7 +59,7 @@ export function BitbucketInput({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="bitbucket_branch" className="font-body text-[#F5F5F5]/80">
+        <Label htmlFor="bitbucket_branch" className="font-body text-muted-foreground">
           Branch
         </Label>
         <Input
@@ -85,7 +85,7 @@ export function BitbucketInput({
         {useAppPassword ? (
           <div className="space-y-3 pt-1 border-t border-indigo-electric/10">
             <div className="space-y-1.5">
-              <Label htmlFor="bitbucket_username" className="font-body text-xs text-[#F5F5F5]/80">
+              <Label htmlFor="bitbucket_username" className="font-body text-xs text-muted-foreground">
                 Bitbucket Username
               </Label>
               <Input
@@ -98,7 +98,7 @@ export function BitbucketInput({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bitbucket_app_password" className="font-body text-xs text-[#F5F5F5]/80">
+              <Label htmlFor="bitbucket_app_password" className="font-body text-xs text-muted-foreground">
                 App Password
               </Label>
               <Input
