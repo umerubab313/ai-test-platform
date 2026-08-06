@@ -13,7 +13,6 @@ import {
 } from "@/components/report/EndpointAccordion";
 import { SummaryBar } from "@/components/report/SummaryBar";
 import { StepIndicator } from "@/components/layout/StepIndicator";
-import { EmptyState } from "@/components/layout/EmptyState";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -155,13 +154,15 @@ export default function ReportPage() {
         <StepIndicator currentStep={6} variant="full" />
       </div>
 
-      <Card>
+      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
-          <p className="page-eyebrow">Step 6 — Report</p>
-          <CardTitle className="font-heading text-xl">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
+            Step 6 — Report
+          </p>
+          <CardTitle className="font-heading text-xl text-[#F5F5F5]">
             Test run report
           </CardTitle>
-          <CardDescription className="font-body">
+          <CardDescription className="font-body text-[#F5F5F5]/60">
             Summary, per-request results, and AI-generated bug write-ups for
             failures.
           </CardDescription>
@@ -169,20 +170,20 @@ export default function ReportPage() {
 
         <CardContent className="space-y-8">
           {!runId ? (
-            <EmptyState
-              message="No completed run found. Execute tests first to view a report."
-              action={
-                <Button
-                  asChild
-                  variant="outline"
-                  className="mt-4 border-indigo-electric/30"
-                >
-                  <Link href={`/projects/${projectId}/execute`}>
-                    Back to execute
-                  </Link>
-                </Button>
-              }
-            />
+            <div className="py-8 text-center">
+              <p className="font-body text-sm text-[#F5F5F5]/60">
+                No completed run found. Execute tests first to view a report.
+              </p>
+              <Button
+                asChild
+                variant="outline"
+                className="mt-4 border-indigo-electric/30"
+              >
+                <Link href={`/projects/${projectId}/execute`}>
+                  Back to execute
+                </Link>
+              </Button>
+            </div>
           ) : isLoading ? (
             <ReportSkeleton />
           ) : error || !report ? (
@@ -206,7 +207,7 @@ export default function ReportPage() {
                     variant="outline"
                     disabled={isDownloadingPdf}
                     onClick={handleDownloadPdf}
-                    className="w-full border-indigo-electric/30 font-heading text-foreground hover:bg-indigo-electric/10 sm:w-auto"
+                    className="w-full border-indigo-electric/30 font-heading text-[#F5F5F5] hover:bg-indigo-electric/10 sm:w-auto"
                   >
                     {isDownloadingPdf ? (
                       <>
@@ -221,7 +222,7 @@ export default function ReportPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-indigo-electric/30 font-heading text-foreground hover:bg-indigo-electric/10 sm:w-auto"
+                    className="w-full border-indigo-electric/30 font-heading text-[#F5F5F5] hover:bg-indigo-electric/10 sm:w-auto"
                     onClick={() => {
                       void navigator.clipboard
                         .writeText(window.location.href)
@@ -239,12 +240,12 @@ export default function ReportPage() {
               </div>
 
               <section className="space-y-3">
-                <h2 className="font-heading text-sm font-semibold text-foreground">
+                <h2 className="font-heading text-sm font-semibold text-[#F5F5F5]">
                   Request results
                 </h2>
 
                 {results.length === 0 ? (
-                  <p className="font-body text-sm text-muted-foreground">
+                  <p className="font-body text-sm text-[#F5F5F5]/50">
                     No request results recorded for this run.
                   </p>
                 ) : (
@@ -253,12 +254,12 @@ export default function ReportPage() {
               </section>
 
               <section className="space-y-4">
-                <h2 className="font-heading text-sm font-semibold text-foreground">
+                <h2 className="font-heading text-sm font-semibold text-[#F5F5F5]">
                   Bug reports
                 </h2>
 
                 {report.bug_reports.length === 0 ? (
-                  <p className="font-body text-sm text-muted-foreground">
+                  <p className="font-body text-sm text-[#F5F5F5]/50">
                     No failures — no bug reports generated.
                   </p>
                 ) : (

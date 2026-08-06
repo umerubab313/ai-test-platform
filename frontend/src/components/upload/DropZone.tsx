@@ -84,19 +84,19 @@ export function DropZone({
 
         {file ? (
           <div className="text-center">
-            <p className="font-mono text-sm text-foreground">{file.name}</p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
+            <p className="font-mono text-sm text-[#F5F5F5]">{file.name}</p>
+            <p className="mt-1 font-mono text-xs text-[#F5F5F5]/50">
               {formatFileSize(file.size)}
             </p>
           </div>
         ) : (
           <div className="text-center">
-            <p className="font-body text-sm text-muted-foreground">
+            <p className="font-body text-sm text-[#F5F5F5]/80">
               {isDragActive
                 ? "Drop your ZIP here"
                 : "Drag & drop a .zip file, or click to browse"}
             </p>
-            <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/40">
               .zip only · max 50MB
             </p>
           </div>

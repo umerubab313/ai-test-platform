@@ -6,8 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { LiveFeed } from "@/components/execution/LiveFeed";
-import { EmptyState } from "@/components/layout/EmptyState";
 import { StepIndicator } from "@/components/layout/StepIndicator";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useRunSocket } from "@/lib/websocket";
 import { useAppStore } from "@/lib/store";
 
@@ -63,6 +62,7 @@ export default function ExecutePage() {
   const progressValue =
     totalCount > 0 ? Math.min(100, (completedCount / totalCount) * 100) : 0;
 
+  // Determine current execution status
   const statusState = useMemo(() => {
     if (error && !isReconnecting && !isComplete) return "FAILED";
     if (isComplete) return failedCount > 0 ? "FAILED" : "COMPLETED";
@@ -104,20 +104,19 @@ export default function ExecutePage() {
         <div className="hidden justify-center sm:flex">
           <StepIndicator currentStep={5} variant="full" />
         </div>
-        <Card>
-          <CardContent className="py-4">
-            <EmptyState
-              message="No active run found. Start a run from the review step."
-              action={
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/projects/${projectId}/review`)}
-                >
-                  Back to review
-                </Button>
-              }
-            />
+        <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
+          <CardContent className="py-12 text-center">
+            <p className="font-body text-sm text-[#F5F5F5]/60">
+              No active run found. Start a run from the review step.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/projects/${projectId}/review`)}
+              className="mt-4 border-indigo-electric/30"
+            >
+              Back to review
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -130,95 +129,94 @@ export default function ExecutePage() {
         <StepIndicator currentStep={5} variant="full" />
       </div>
 
-      <Card>
+      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="page-eyebrow">Step 5 — Execute Tests</p>
-              <CardTitle className="font-heading text-xl text-foreground">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
+                Step 5 — Execute Tests
+              </p>
+              <CardTitle className="font-heading text-xl text-[#F5F5F5]">
                 Live execution
               </CardTitle>
             </div>
 
+            {/* Execution State Badges */}
             {statusState === "PENDING" && (
-              <StatusBadge variant="pending" className="gap-1.5 px-3 py-1 text-xs">
+              <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-xs flex items-center gap-1.5 px-3 py-1">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> PENDING
-              </StatusBadge>
+              </Badge>
             )}
             {statusState === "RUNNING" && (
-              <StatusBadge variant="running" className="gap-1.5 px-3 py-1 text-xs">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> RUNNING
-              </StatusBadge>
+              <Badge className="border-lime-cyber/40 bg-lime-cyber/10 text-lime-cyber font-mono text-xs flex items-center gap-1.5 px-3 py-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-lime-cyber" /> RUNNING
+              </Badge>
             )}
             {statusState === "COMPLETED" && (
-              <StatusBadge variant="completed" className="gap-1.5 px-3 py-1 text-xs">
+              <Badge className="border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono text-xs flex items-center gap-1.5 px-3 py-1">
                 <CheckCircle2 className="h-3.5 w-3.5" /> COMPLETED
-              </StatusBadge>
+              </Badge>
             )}
             {statusState === "FAILED" && (
-              <StatusBadge variant="failed" className="gap-1.5 px-3 py-1 text-xs">
+              <Badge className="border-red-500/40 bg-red-500/10 text-red-400 font-mono text-xs flex items-center gap-1.5 px-3 py-1">
                 <XCircle className="h-3.5 w-3.5" /> FAILED
-              </StatusBadge>
+              </Badge>
             )}
           </div>
-          <CardDescription className="font-body text-muted-foreground">
+          <CardDescription className="font-body text-[#F5F5F5]/60">
             Newman results stream in over WebSocket as each approved test case
             completes.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Status Banners */}
           {statusState === "COMPLETED" && (
-            <div className="flex items-center gap-3 rounded-md border border-status-completed/30 bg-status-completed/10 p-4 font-mono text-sm text-status-completed">
+            <div className="flex items-center gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-300 font-mono text-sm">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
-              <span>
-                Execution finished! All {totalCount} test cases executed
-                successfully.
-              </span>
+              <span>Execution finished! All {totalCount} test cases executed successfully.</span>
             </div>
           )}
 
           {statusState === "FAILED" && (
-            <div className="flex items-center gap-3 rounded-md border border-status-fail/30 bg-status-fail/10 p-4 font-mono text-sm text-status-fail">
+            <div className="flex items-center gap-3 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-red-300 font-mono text-sm">
               <XCircle className="h-5 w-5 shrink-0" />
               <span>
-                {error
-                  ? `Execution error: ${error}`
-                  : `Execution complete with ${failedCount} failure(s). Check logs below.`}
+                {error ? `Execution error: ${error}` : `Execution complete with ${failedCount} failure(s). Check logs below.`}
               </span>
             </div>
           )}
 
-          <div className="surface-inset p-4">
+          <div className="rounded-lg border border-indigo-electric/20 bg-graphite/60 p-4">
             <div className="mb-4 grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/50">
                   Passed
                 </p>
-                <p className="font-heading text-2xl font-bold text-status-success">
+                <p className="font-heading text-2xl font-bold text-lime-cyber">
                   {passedCount}
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/50">
                   Failed
                 </p>
-                <p className="font-heading text-2xl font-bold text-status-fail">
+                <p className="font-heading text-2xl font-bold text-fuchsia">
                   {failedCount}
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#F5F5F5]/50">
                   Total
                 </p>
-                <p className="font-heading text-2xl font-bold text-foreground">
+                <p className="font-heading text-2xl font-bold text-[#F5F5F5]">
                   {totalCount}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="flex flex-col gap-1 font-mono text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-1 font-mono text-xs text-[#F5F5F5]/60 sm:flex-row sm:items-center sm:justify-between">
                 <span>
                   {completedCount}/{totalCount} completed
                 </span>
@@ -226,8 +224,8 @@ export default function ExecutePage() {
                   {isComplete ? (
                     "Run complete"
                   ) : isReconnecting ? (
-                    <span className="inline-flex items-center gap-1.5 text-status-running">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-status-running" />
+                    <span className="inline-flex items-center gap-1.5 text-lime-cyber">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime-cyber" />
                       Reconnecting…
                     </span>
                   ) : isConnected ? (
@@ -239,20 +237,20 @@ export default function ExecutePage() {
               </div>
               <Progress
                 value={progressValue}
-                className="h-2 bg-indigo-electric/20 [&>div]:bg-status-success"
+                className="h-2 bg-indigo-electric/20 [&>div]:bg-lime-cyber"
               />
             </div>
           </div>
 
           {isReconnecting && !isComplete ? (
-            <p className="flex items-center gap-2 font-mono text-xs text-status-running">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-status-running" />
+            <p className="flex items-center gap-2 font-mono text-xs text-lime-cyber/80">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime-cyber" />
               Reconnecting to live feed…
             </p>
           ) : null}
 
           {error && !isReconnecting ? (
-            <p className="text-sm text-status-fail">{error}</p>
+            <p className="text-sm text-red-500">{error}</p>
           ) : null}
 
           <LiveFeed results={results} isPaused={isComplete} />
@@ -270,3 +268,4 @@ export default function ExecutePage() {
     </div>
   );
 }
+

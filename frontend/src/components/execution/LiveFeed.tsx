@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-import { EmptyState } from "@/components/layout/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 import type { LiveTestResult } from "@/lib/websocket";
@@ -70,13 +69,19 @@ export function LiveFeed({ results, isPaused = false }: LiveFeedProps) {
   }, [results.length, isPaused]);
 
   if (results.length === 0) {
-    return <EmptyState message="Waiting for test results…" className="py-12" />;
+    return (
+      <div className="rounded-lg border border-indigo-electric/20 bg-graphite/40 px-4 py-12 text-center">
+        <p className="font-mono text-sm text-[#F5F5F5]/50">
+          Waiting for test results…
+        </p>
+      </div>
+    );
   }
 
   return (
     <div
       className={cn(
-        "surface-inset max-h-[28rem] space-y-2 overflow-y-auto p-2",
+        "max-h-[28rem] space-y-2 overflow-y-auto rounded-lg border border-indigo-electric/20 bg-graphite/40 p-2",
         isPaused && "opacity-90"
       )}
     >
@@ -91,9 +96,9 @@ export function LiveFeed({ results, isPaused = false }: LiveFeedProps) {
           <div
             key={`${testName}-${index}`}
             className={cn(
-              "rounded-md border border-border bg-card/80 transition-colors",
-              failed && "border-status-fail/25 bg-status-fail/10",
-              failed && "cursor-pointer hover:bg-status-fail/15"
+              "rounded-md border border-indigo-electric/10 bg-[#1C1C1C]/80 transition-colors",
+              failed && "border-fuchsia/20 bg-fuchsia/10",
+              failed && "cursor-pointer hover:bg-fuchsia/15"
             )}
           >
             <button
@@ -105,25 +110,25 @@ export function LiveFeed({ results, isPaused = false }: LiveFeedProps) {
                 setExpandedIndex(expanded ? null : index);
               }}
               className={cn(
-                "interactive-focus flex w-full flex-col gap-2 rounded-md px-4 py-3 text-left sm:flex-row sm:items-center sm:justify-between",
+                "flex w-full flex-col gap-2 px-4 py-3 text-left sm:flex-row sm:items-center sm:justify-between",
                 !failed && "cursor-default sm:cursor-default"
               )}
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate font-body text-sm text-foreground">
+                <p className="truncate font-body text-sm text-[#F5F5F5]">
                   {testName}
                 </p>
               </div>
 
               <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
                 <StatusBadge variant={passed ? "passed" : "failed"} />
-                <span className="font-mono text-xs text-muted-foreground">
+                <span className="font-mono text-xs text-[#F5F5F5]/70">
                   {formatResponseTime(result.response_time)}
                 </span>
                 {failed ? (
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 text-status-fail transition-transform",
+                      "h-4 w-4 text-fuchsia transition-transform",
                       expanded && "rotate-180"
                     )}
                   />
@@ -132,16 +137,16 @@ export function LiveFeed({ results, isPaused = false }: LiveFeedProps) {
             </button>
 
             {failed && expanded ? (
-              <div className="border-t border-status-fail/20 px-4 py-3 font-mono text-xs text-foreground/90">
+              <div className="border-t border-fuchsia/20 px-4 py-3 font-mono text-xs text-[#F5F5F5]/80">
                 <p>
                   Expected status:{" "}
-                  <span className="text-status-success">
+                  <span className="text-lime-cyber">
                     {expected ?? "—"}
                   </span>
                 </p>
                 <p className="mt-1">
                   Actual status:{" "}
-                  <span className="text-status-fail">{actual ?? "—"}</span>
+                  <span className="text-fuchsia">{actual ?? "—"}</span>
                 </p>
               </div>
             ) : null}

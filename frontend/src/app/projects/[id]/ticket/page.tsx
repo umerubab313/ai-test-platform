@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { StepIndicator } from "@/components/layout/StepIndicator";
-import { EmptyState, LoadingState } from "@/components/layout/EmptyState";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -283,20 +282,24 @@ export default function TicketPage() {
       </div>
 
       {/* Existing Tickets Section */}
-      <Card>
+      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
-          <CardTitle className="font-heading text-lg">
+          <CardTitle className="font-heading text-lg text-[#F5F5F5]">
             Project Tickets ({tickets.length})
           </CardTitle>
-          <CardDescription className="font-body text-xs">
+          <CardDescription className="font-body text-xs text-[#F5F5F5]/60">
             Select a ticket to edit or generate test cases from existing bug tickets.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoadingTickets ? (
-            <LoadingState message="Loading tickets…" />
+            <div className="flex items-center justify-center gap-2 py-6 text-sm text-[#F5F5F5]/60">
+              <Loader2 className="h-4 w-4 animate-spin text-lime-cyber" /> Loading tickets…
+            </div>
           ) : tickets.length === 0 ? (
-            <EmptyState message="No tickets created yet for this project." />
+            <div className="rounded-md border border-indigo-electric/15 bg-graphite/40 p-4 text-center text-sm text-[#F5F5F5]/50">
+              No tickets created yet for this project.
+            </div>
           ) : (
             <div className="space-y-2">
               {tickets.map((t) => (
@@ -306,11 +309,11 @@ export default function TicketPage() {
                   className={`cursor-pointer rounded-md border p-3 transition-colors ${
                     editingTicketId === t.id
                       ? "border-lime-cyber bg-lime-cyber/10"
-                      : "border-indigo-electric/15 bg-card hover:border-indigo-electric/30"
+                      : "border-indigo-electric/15 bg-[#1C1C1C] hover:border-indigo-electric/30"
                   }`}
                 >
-                  <p className="font-heading text-sm font-semibold">{t.title}</p>
-                  <p className="line-clamp-2 font-body text-xs text-muted-foreground">{t.description}</p>
+                  <p className="font-heading text-sm font-semibold text-[#F5F5F5]">{t.title}</p>
+                  <p className="line-clamp-2 font-body text-xs text-[#F5F5F5]/70">{t.description}</p>
                 </div>
               ))}
             </div>
@@ -318,13 +321,13 @@ export default function TicketPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
-          <p className="page-eyebrow">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
             Step 3 — {editingTicketId ? "Edit Ticket" : "Create Ticket"}
           </p>
           <div className="flex items-center justify-between">
-            <CardTitle className="font-heading text-xl">
+            <CardTitle className="font-heading text-xl text-[#F5F5F5]">
               {editingTicketId ? "Edit ticket & re-generate" : "Describe what to test"}
             </CardTitle>
             {editingTicketId ? (
@@ -339,7 +342,7 @@ export default function TicketPage() {
               </Button>
             ) : null}
           </div>
-          <CardDescription className="font-body">
+          <CardDescription className="font-body text-[#F5F5F5]/60">
             Write a ticket in plain language. AI will generate API test cases
             from your endpoint map and acceptance criteria.
           </CardDescription>
@@ -349,14 +352,14 @@ export default function TicketPage() {
           {isGenerating ? (
             <div className="flex flex-col items-center justify-center gap-4 py-12">
               <Loader2 className="h-8 w-8 animate-spin text-lime-cyber" />
-              <p className="font-mono text-sm text-muted-foreground">
+              <p className="font-mono text-sm text-[#F5F5F5]/80">
                 {GENERATION_MESSAGES[messageIndex]}
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div className="space-y-2">
-                <Label htmlFor="title" className="font-body">
+                <Label htmlFor="title" className="font-body text-[#F5F5F5]/80">
                   Title
                 </Label>
                 <Input
@@ -375,7 +378,7 @@ export default function TicketPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="description"
-                  className="font-body"
+                  className="font-body text-[#F5F5F5]/80"
                 >
                   Description
                 </Label>
@@ -395,10 +398,10 @@ export default function TicketPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="acceptance_criteria"
-                  className="font-body"
+                  className="font-body text-[#F5F5F5]/80"
                 >
                   Acceptance criteria{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
+                  <span className="text-[#F5F5F5]/40">(Optional)</span>
                 </Label>
                 <Textarea
                   id="acceptance_criteria"

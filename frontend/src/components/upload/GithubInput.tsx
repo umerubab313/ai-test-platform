@@ -26,7 +26,7 @@ export function GithubInput({
 }: GithubInputProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <Label htmlFor="github_url" className="font-body text-muted-foreground">
+      <Label htmlFor="github_url" className="font-body text-[#F5F5F5]/80">
         GitHub repository URL
       </Label>
       <Input

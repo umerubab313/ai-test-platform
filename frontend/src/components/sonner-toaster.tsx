@@ -10,9 +10,9 @@ export function SonnerToaster() {
       toastOptions={{
         classNames: {
           toast:
-            "bg-card border border-border text-foreground font-body",
+            "bg-graphite border border-indigo-electric/20 text-[#F5F5F5] font-body",
           title: "font-heading",
-          description: "text-muted-foreground",
+          description: "text-[#F5F5F5]/80",
         },
       }}
     />

@@ -31,13 +31,15 @@ export function StatusPage({
         className
       )}
     >
-      <Card className="w-full">
+      <Card className="w-full border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader className="text-center">
-          <p className="page-eyebrow">{eyebrow}</p>
-          <CardTitle className="font-heading text-2xl text-foreground">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
+            {eyebrow}
+          </p>
+          <CardTitle className="font-heading text-2xl text-[#F5F5F5]">
             {title}
           </CardTitle>
-          <CardDescription className="font-body text-muted-foreground">
+          <CardDescription className="font-body text-[#F5F5F5]/60">
             {description}
           </CardDescription>
         </CardHeader>

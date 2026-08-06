@@ -115,13 +115,15 @@ export default function NewProjectPage() {
         <StepIndicator currentStep={1} variant="full" />
       </div>
 
-      <Card>
+      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
-          <p className="page-eyebrow">Step 1 — Create Project</p>
-          <CardTitle className="font-heading text-xl">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
+            Step 1 — Create Project
+          </p>
+          <CardTitle className="font-heading text-xl text-[#F5F5F5]">
             New project
           </CardTitle>
-          <CardDescription className="font-body">
+          <CardDescription className="font-body text-[#F5F5F5]/60">
             Name your API under test, pick a framework parser, and set the base
             URL Newman will hit during execution.
           </CardDescription>
@@ -130,7 +132,7 @@ export default function NewProjectPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <div className="space-y-2">
-              <Label htmlFor="name" className="font-body text-muted-foreground">
+              <Label htmlFor="name" className="font-body text-[#F5F5F5]/80">
                 Project name
               </Label>
               <Input
@@ -147,7 +149,7 @@ export default function NewProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="framework" className="font-body text-muted-foreground">
+              <Label htmlFor="framework" className="font-body text-[#F5F5F5]/80">
                 Framework
               </Label>
               <Select
@@ -179,7 +181,7 @@ export default function NewProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="base_url" className="font-body text-muted-foreground">
+              <Label htmlFor="base_url" className="font-body text-[#F5F5F5]/80">
                 Base URL
               </Label>
               <Input

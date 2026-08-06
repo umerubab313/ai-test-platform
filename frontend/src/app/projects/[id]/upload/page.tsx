@@ -270,13 +270,15 @@ export default function UploadPage() {
         <StepIndicator currentStep={2} variant="full" />
       </div>
 
-      <Card>
+      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
-          <p className="page-eyebrow">Step 2 — Upload Codebase</p>
-          <CardTitle className="font-heading text-xl">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
+            Step 2 — Upload Codebase
+          </p>
+          <CardTitle className="font-heading text-xl text-[#F5F5F5]">
             Upload & parse
           </CardTitle>
-          <CardDescription className="font-body">
+          <CardDescription className="font-body text-[#F5F5F5]/60">
             Provide a ZIP archive or public GitHub repo. We extract routes and
             build an endpoint map for AI test generation.
           </CardDescription>
@@ -288,7 +290,7 @@ export default function UploadPage() {
               <div className="relative h-2 w-full overflow-hidden rounded-full bg-indigo-electric/20">
                 <div className="progress-indeterminate absolute inset-y-0 w-1/3 rounded-full bg-lime-cyber" />
               </div>
-              <p className="text-center font-mono text-sm text-muted-foreground">
+              <p className="text-center font-mono text-sm text-[#F5F5F5]/70">
                 Parsing codebase...
               </p>
             </div>
@@ -299,7 +301,7 @@ export default function UploadPage() {
               <StatusBadge variant="passed">
                 {formatFramework(displayFramework as Framework)}
               </StatusBadge>
-              <p className="font-mono text-sm text-muted-foreground">
+              <p className="font-mono text-sm text-[#F5F5F5]/80">
                 {endpointCount} endpoints found
               </p>
               <Button
@@ -322,7 +324,10 @@ export default function UploadPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmed_framework" className="font-body">
+                <Label
+                  htmlFor="confirmed_framework"
+                  className="font-body text-[#F5F5F5]/80"
+                >
                   Framework
                 </Label>
                 <Select
@@ -379,19 +384,19 @@ export default function UploadPage() {
                 <TabsList className="grid w-full grid-cols-3 border border-indigo-electric/20 bg-graphite">
                   <TabsTrigger
                     value="zip"
-                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-foreground"
+                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
                   >
                     ZIP Upload
                   </TabsTrigger>
                   <TabsTrigger
                     value="github"
-                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-foreground"
+                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
                   >
                     GitHub URL
                   </TabsTrigger>
                   <TabsTrigger
                     value="bitbucket"
-                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-foreground"
+                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
                   >
                     Bitbucket Repo
                   </TabsTrigger>
@@ -442,7 +447,7 @@ export default function UploadPage() {
           ) : null}
 
           {phase === "uploading" ? (
-            <p className="text-center font-mono text-sm text-muted-foreground">
+            <p className="text-center font-mono text-sm text-[#F5F5F5]/60">
               Uploading…
             </p>
           ) : null}
