@@ -227,7 +227,7 @@ export const handlers = [
   }),
 
   http.post(api("/tickets/:ticketId/run"), ({ params }) => {
-    const _ticketId = String(params.ticketId);
+    const ticketId = String(params.ticketId);
     const runId = crypto.randomUUID();
 
     return HttpResponse.json(

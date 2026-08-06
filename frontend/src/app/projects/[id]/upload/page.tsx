@@ -7,10 +7,6 @@ import { toast } from "sonner";
 import { StepIndicator } from "@/components/layout/StepIndicator";
 import { DropZone } from "@/components/upload/DropZone";
 import { GithubInput, isValidGithubRepoUrl } from "@/components/upload/GithubInput";
-import {
-  BitbucketInput,
-  isValidBitbucketRepoUrl,
-} from "@/components/upload/BitbucketInput";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,7 +30,7 @@ import type { UploadResult } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import type { Framework } from "@/types";
 
-type UploadTab = "zip" | "github" | "bitbucket";
+type UploadTab = "zip" | "github";
 
 type UploadPhase =
   | "form"
@@ -81,13 +77,6 @@ export default function UploadPage() {
   const [githubUrl, setGithubUrl] = useState("");
   const [zipError, setZipError] = useState<string>();
   const [githubError, setGithubError] = useState<string>();
-
-  const [bitbucketUrl, setBitbucketUrl] = useState("");
-  const [bitbucketBranch, setBitbucketBranch] = useState("main");
-  const [useAppPassword, setUseAppPassword] = useState(false);
-  const [bitbucketUsername, setBitbucketUsername] = useState("");
-  const [bitbucketAppPassword, setBitbucketAppPassword] = useState("");
-  const [bitbucketError, setBitbucketError] = useState<string>();
 
   const [phase, setPhase] = useState<UploadPhase>("form");
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -189,7 +178,6 @@ export default function UploadPage() {
   const handleUpload = async () => {
     setZipError(undefined);
     setGithubError(undefined);
-    setBitbucketError(undefined);
     setPollError(undefined);
 
     if (activeTab === "zip") {
@@ -197,22 +185,12 @@ export default function UploadPage() {
         setZipError("Select a .zip file to upload.");
         return;
       }
-    } else if (activeTab === "github") {
-      if (!githubUrl.trim()) {
-        setGithubError("GitHub URL is required.");
-        return;
-      } else if (!isValidGithubRepoUrl(githubUrl)) {
-        setGithubError("Enter a valid https://github.com/owner/repo URL.");
-        return;
-      }
-    } else if (activeTab === "bitbucket") {
-      if (!bitbucketUrl.trim()) {
-        setBitbucketError("Bitbucket URL is required.");
-        return;
-      } else if (!isValidBitbucketRepoUrl(bitbucketUrl)) {
-        setBitbucketError("Enter a valid https://bitbucket.org/owner/repo URL.");
-        return;
-      }
+    } else if (!githubUrl.trim()) {
+      setGithubError("GitHub URL is required.");
+      return;
+    } else if (!isValidGithubRepoUrl(githubUrl)) {
+      setGithubError("Enter a valid https://github.com/owner/repo URL.");
+      return;
     }
 
     setPhase("uploading");
@@ -225,15 +203,7 @@ export default function UploadPage() {
               formData.append("file", zipFile as File);
               return formData;
             })()
-          : activeTab === "github"
-          ? githubUrl.trim()
-          : {
-              url: bitbucketUrl.trim(),
-              source: "bitbucket" as const,
-              branch: bitbucketBranch.trim() || "main",
-              ...(useAppPassword && bitbucketUsername ? { username: bitbucketUsername.trim() } : {}),
-              ...(useAppPassword && bitbucketAppPassword ? { app_password: bitbucketAppPassword.trim() } : {}),
-            };
+          : githubUrl.trim();
 
       const upload = await uploadCodebase(projectId, payload);
 
@@ -381,7 +351,7 @@ export default function UploadPage() {
                 value={activeTab}
                 onValueChange={(value) => setActiveTab(value as UploadTab)}
               >
-                <TabsList className="grid w-full grid-cols-3 border border-indigo-electric/20 bg-graphite">
+                <TabsList className="grid w-full grid-cols-2 border border-indigo-electric/20 bg-graphite">
                   <TabsTrigger
                     value="zip"
                     className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
@@ -393,12 +363,6 @@ export default function UploadPage() {
                     className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
                   >
                     GitHub URL
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="bitbucket"
-                    className="font-mono text-xs data-[state=active]:bg-indigo-electric/20 data-[state=active]:text-[#F5F5F5]"
-                  >
-                    Bitbucket Repo
                   </TabsTrigger>
                 </TabsList>
 
@@ -415,22 +379,6 @@ export default function UploadPage() {
                     value={githubUrl}
                     onChange={setGithubUrl}
                     error={githubError}
-                  />
-                </TabsContent>
-
-                <TabsContent value="bitbucket" className="mt-4">
-                  <BitbucketInput
-                    url={bitbucketUrl}
-                    onChangeUrl={setBitbucketUrl}
-                    branch={bitbucketBranch}
-                    onChangeBranch={setBitbucketBranch}
-                    useAppPassword={useAppPassword}
-                    onToggleAppPassword={setUseAppPassword}
-                    username={bitbucketUsername}
-                    onChangeUsername={setBitbucketUsername}
-                    appPassword={bitbucketAppPassword}
-                    onChangeAppPassword={setBitbucketAppPassword}
-                    error={bitbucketError}
                   />
                 </TabsContent>
               </Tabs>

@@ -11,12 +11,6 @@ import {
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 
-export interface AssertionItem {
-  name: string;
-  passed: boolean;
-  error?: string | null;
-}
-
 export interface ReportResult {
   title: string;
   endpoint: string;
@@ -24,7 +18,6 @@ export interface ReportResult {
   status_code: number | null;
   response_time_ms: number | null;
   passed: boolean;
-  assertions?: AssertionItem[];
 }
 
 export interface EndpointAccordionProps {
@@ -117,63 +110,37 @@ export function EndpointAccordion({ results, className }: EndpointAccordionProps
           </AccordionTrigger>
 
           <AccordionContent>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {group.tests.map((test, index) => (
                 <li
                   key={`${test.title}-${index}`}
                   className={cn(
-                    "flex flex-col gap-2 rounded-md border border-indigo-electric/10 bg-[#1C1C1C]/80 p-3",
+                    "flex flex-col gap-2 rounded-md border border-indigo-electric/10 bg-[#1C1C1C]/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between",
                     !test.passed && "border-fuchsia/20 bg-fuchsia/5"
                   )}
                 >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-body text-sm font-medium text-[#F5F5F5]">
-                        {test.title}
-                      </p>
-                      <p className="mt-0.5 font-mono text-xs text-[#F5F5F5]/50">
-                        Status{" "}
-                        <span
-                          className={
-                            test.passed ? "text-lime-cyber" : "text-fuchsia"
-                          }
-                        >
-                          {test.status_code ?? "—"}
-                        </span>
-                      </p>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2">
-                      <StatusBadge variant={test.passed ? "passed" : "failed"} />
-                      <span className="font-mono text-xs text-[#F5F5F5]/60">
-                        {formatResponseTime(test.response_time_ms)}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-body text-sm text-[#F5F5F5]">
+                      {test.title}
+                    </p>
+                    <p className="mt-0.5 font-mono text-xs text-[#F5F5F5]/50">
+                      Status{" "}
+                      <span
+                        className={
+                          test.passed ? "text-lime-cyber" : "text-fuchsia"
+                        }
+                      >
+                        {test.status_code ?? "—"}
                       </span>
-                    </div>
+                    </p>
                   </div>
 
-                  {/* Assertion Level Details */}
-                  {test.assertions && test.assertions.length > 0 ? (
-                    <div className="mt-2 space-y-1.5 border-t border-indigo-electric/10 pt-2 font-mono text-xs">
-                      <p className="text-[10px] uppercase tracking-wider text-[#F5F5F5]/40">
-                        Assertions ({test.assertions.length})
-                      </p>
-                      {test.assertions.map((a, aIdx) => (
-                        <div
-                          key={`${a.name}-${aIdx}`}
-                          className="flex items-start justify-between gap-2 rounded bg-graphite/60 px-2 py-1"
-                        >
-                          <span className={a.passed ? "text-lime-cyber" : "text-fuchsia"}>
-                            {a.passed ? "✓" : "✗"} {a.name}
-                          </span>
-                          {a.error ? (
-                            <span className="text-fuchsia/80 text-[11px] truncate max-w-xs">
-                              {a.error}
-                            </span>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
+                  <div className="flex shrink-0 items-center gap-2">
+                    <StatusBadge variant={test.passed ? "passed" : "failed"} />
+                    <span className="font-mono text-xs text-[#F5F5F5]/60">
+                      {formatResponseTime(test.response_time_ms)}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -183,4 +150,3 @@ export function EndpointAccordion({ results, className }: EndpointAccordionProps
     </Accordion>
   );
 }
-

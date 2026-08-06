@@ -23,11 +23,9 @@ import {
   getProject,
   getTicket,
   listTestCases,
-  listTickets,
-  updateTicket,
 } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
-import type { TestCase, Ticket } from "@/types";
+import type { TestCase } from "@/types";
 
 const GENERATION_MESSAGES = [
   "Reading endpoint map...",
@@ -79,10 +77,6 @@ export default function TicketPage() {
   const [acceptanceCriteria, setAcceptanceCriteria] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [isLoadingTickets, setIsLoadingTickets] = useState(true);
-  const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
-
   const [isGenerating, setIsGenerating] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
   const [generationError, setGenerationError] = useState<string>();
@@ -94,18 +88,6 @@ export default function TicketPage() {
     isGeneratingRef.current = isGenerating;
   }, [isGenerating]);
 
-  const loadTickets = async (pId: string) => {
-    setIsLoadingTickets(true);
-    try {
-      const result = await listTickets(pId);
-      setTickets(result);
-    } catch {
-      toast.error("Failed to load tickets.");
-    } finally {
-      setIsLoadingTickets(false);
-    }
-  };
-
   useEffect(() => {
     if (!projectId) {
       return;
@@ -113,18 +95,13 @@ export default function TicketPage() {
 
     const project = useAppStore.getState().project;
     if (project?.id === projectId) {
-      void loadTickets(projectId);
       return;
     }
 
     getProject(projectId)
-      .then((proj) => {
-        setProject(proj);
-        void loadTickets(proj.id);
-      })
+      .then(setProject)
       .catch(() => {
         toast.error("Failed to load project.");
-        setIsLoadingTickets(false);
       });
   }, [projectId, setProject]);
 
@@ -206,21 +183,6 @@ export default function TicketPage() {
     };
   }, [activeTicketId, isGenerating, projectId, router, setTestCases]);
 
-  const handleSelectTicketToEdit = (t: Ticket) => {
-    setEditingTicketId(t.id);
-    setTitle(t.title);
-    setDescription(t.description);
-    setAcceptanceCriteria(t.acceptance_criteria ?? "");
-  };
-
-  const handleResetForm = () => {
-    setEditingTicketId(null);
-    setTitle("");
-    setDescription("");
-    setAcceptanceCriteria("");
-    setErrors({});
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -244,104 +206,37 @@ export default function TicketPage() {
     setActiveTicketId(null);
 
     try {
-      let targetTicketId: string;
-      if (editingTicketId) {
-        await updateTicket(editingTicketId, {
-          title: title.trim(),
-          description: description.trim(),
-          acceptance_criteria: acceptanceCriteria.trim() || null,
-        });
-        targetTicketId = editingTicketId;
-        toast.success("Ticket updated.");
-      } else {
-        const created = await createTicket(projectId, {
-          title: title.trim(),
-          description: description.trim(),
-          acceptance_criteria: acceptanceCriteria.trim() || null,
-        });
-        targetTicketId = created.ticket_id;
-        toast.success("Ticket created.");
-      }
+      const created = await createTicket(projectId, {
+        title: title.trim(),
+        description: description.trim(),
+        acceptance_criteria: acceptanceCriteria.trim() || null,
+      });
 
-      await loadTickets(projectId);
-      await generateTestCases(targetTicketId);
-      setActiveTicketId(targetTicketId);
+      await generateTestCases(created.ticket_id);
+      setActiveTicketId(created.ticket_id);
     } catch {
       setIsGenerating(false);
       setActiveTicketId(null);
       toast.error(
-        "Failed to create/update ticket or start generation. Ensure the codebase was uploaded."
+        "Failed to create ticket or start generation. Ensure the codebase was uploaded."
       );
     }
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-8 py-4">
+    <div className="mx-auto flex w-full max-w-lg flex-col gap-8 py-4">
       <div className="hidden justify-center sm:flex">
         <StepIndicator currentStep={3} variant="full" />
       </div>
 
-      {/* Existing Tickets Section */}
-      <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
-        <CardHeader>
-          <CardTitle className="font-heading text-lg text-[#F5F5F5]">
-            Project Tickets ({tickets.length})
-          </CardTitle>
-          <CardDescription className="font-body text-xs text-[#F5F5F5]/60">
-            Select a ticket to edit or generate test cases from existing bug tickets.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoadingTickets ? (
-            <div className="flex items-center justify-center gap-2 py-6 text-sm text-[#F5F5F5]/60">
-              <Loader2 className="h-4 w-4 animate-spin text-lime-cyber" /> Loading tickets…
-            </div>
-          ) : tickets.length === 0 ? (
-            <div className="rounded-md border border-indigo-electric/15 bg-graphite/40 p-4 text-center text-sm text-[#F5F5F5]/50">
-              No tickets created yet for this project.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {tickets.map((t) => (
-                <div
-                  key={t.id}
-                  onClick={() => handleSelectTicketToEdit(t)}
-                  className={`cursor-pointer rounded-md border p-3 transition-colors ${
-                    editingTicketId === t.id
-                      ? "border-lime-cyber bg-lime-cyber/10"
-                      : "border-indigo-electric/15 bg-[#1C1C1C] hover:border-indigo-electric/30"
-                  }`}
-                >
-                  <p className="font-heading text-sm font-semibold text-[#F5F5F5]">{t.title}</p>
-                  <p className="line-clamp-2 font-body text-xs text-[#F5F5F5]/70">{t.description}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       <Card className="border-indigo-electric/20 bg-[#1C1C1C]/90 shadow-none">
         <CardHeader>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-indigo-electric">
-            Step 3 — {editingTicketId ? "Edit Ticket" : "Create Ticket"}
+            Step 3 — Create Ticket
           </p>
-          <div className="flex items-center justify-between">
-            <CardTitle className="font-heading text-xl text-[#F5F5F5]">
-              {editingTicketId ? "Edit ticket & re-generate" : "Describe what to test"}
-            </CardTitle>
-            {editingTicketId ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleResetForm}
-                className="text-xs text-lime-cyber hover:bg-lime-cyber/10"
-              >
-                + New Ticket
-              </Button>
-            ) : null}
-          </div>
+          <CardTitle className="font-heading text-xl text-[#F5F5F5]">
+            Describe what to test
+          </CardTitle>
           <CardDescription className="font-body text-[#F5F5F5]/60">
             Write a ticket in plain language. AI will generate API test cases
             from your endpoint map and acceptance criteria.
@@ -422,7 +317,7 @@ export default function TicketPage() {
                 type="submit"
                 className="w-full bg-lime-cyber font-heading font-semibold text-black hover:bg-lime-cyber/90 hover:glow-lime"
               >
-                {editingTicketId ? "Save & Generate test cases" : "Generate test cases"}
+                Generate test cases
               </Button>
             </form>
           )}
@@ -431,4 +326,3 @@ export default function TicketPage() {
     </div>
   );
 }
-

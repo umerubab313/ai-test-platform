@@ -54,8 +54,6 @@ export interface TestRun {
   failed: number;
   skipped: number;
   avg_response_time_ms: number;
-  executed_at?: string;
-  completed_at?: string;
 }
 
 export interface BugReport {
